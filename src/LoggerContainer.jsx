@@ -4,7 +4,7 @@ import { isString, isNumber, isFunction } from 'valid-types';
 import BSOD from './BSOD';
 import { stack, stackCollection, getStackData, onCriticalError } from './stack';
 import { getCurrentDate } from './utils';
-import { setUp } from './logger';
+import { setUp, logger, getCounter } from './logger';
 
 class LoggerContainer extends Component {
     static childContextTypes = {
@@ -133,6 +133,7 @@ class LoggerContainer extends Component {
         return <>
             {this.props.children}
             {this.props.bsodActive && this.state.bsod && <Bsod
+                count={getCounter()}
                 onClose={this.closeBsod}
                 stackData={this.getStackData()}
             />}
@@ -148,12 +149,16 @@ LoggerContainer.propTypes = {
         PropTypes.string,
         PropTypes.number
     ]),
+    bsod: PropTypes.oneOfType([
+        PropTypes.element,
+        PropTypes.func
+    ]),
     limit: PropTypes.number,
     getCurrentDate: PropTypes.func,
     onError: PropTypes.func,
     onPrepareStack: PropTypes.func,
     stdout: PropTypes.func,
-    console: PropTypes.func
+    console: PropTypes.object
 };
 
 LoggerContainer.defaultProps = {

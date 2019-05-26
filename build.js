@@ -1,6 +1,6 @@
 const { libraryCompiler } = require('rocket-starter');
 
-libraryCompiler('Logger', {}, config => {
+libraryCompiler('logrock', {}, config => {
     config.externals = [{
         react: {
             root: 'React',

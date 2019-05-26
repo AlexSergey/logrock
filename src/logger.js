@@ -13,6 +13,7 @@ import { stackCollection } from './stack';
  * debug
  * */
 logger.useDefaults();
+let count = 0;
 
 function setUp(props) {
     logger.setHandler((messages, context) => {
@@ -43,9 +44,14 @@ function setUp(props) {
                 if (stackData) {
                     stackCollection.add(mixParams(stackData, true));
                 }
+                count += 1;
             }
         }
     });
 }
 
-export { setUp, logger };
+function getCounter() {
+    return count;
+}
+
+export { setUp, logger, getCounter };

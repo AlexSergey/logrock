@@ -2,6 +2,7 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { CRITICAL } from './types';
 import { isArray, isObject, isFunction } from 'valid-types';
+import {logger} from "./logger";
 
 const BSOD = props => {
     const actions = props.stackData.actions;
@@ -15,7 +16,7 @@ const BSOD = props => {
             zIndex: '10000',
             background: '#00a',
             color: '#b3b3b3',
-            fontSize: '24px',
+            fontSize: '14px',
             fontFamily: 'courier',
             top: 0,
             left: 0
@@ -46,24 +47,33 @@ const BSOD = props => {
                     display: 'inline-block',
                     padding: '0.25em 0.5em',
                     margin: '0 auto',
-                    fontSize: '1rem',
+                    fontSize: '18px',
                     fontWeight: 'bold',
                     background: '#b3b3b3',
-                    color: '#00a'
-                }}>{cError.message}</h2>}
+                    color: '#00a',
+                    fontFamily: 'courier'
+                }}>{cError.stack[0] || cError.message || ''}</h2>}
                 <div style={{
                     fontSize: '1rem',
                     textAlign: 'left',
                     margin: '2em'
                 }}>
-                    {cError && isArray(cError.stack) && <pre>${cError.stack.join('\n')}</pre>}
+                    {cError && isArray(cError.stack) && <pre
+                        style={{
+                            margin: '0 0 10px',
+                            font: '10px/13px Lucida Console, Monaco, monospace',
+                            color: 'rgb(179, 179, 179)',
+                            background: 'none',
+                            border: 0
+                        }}
+                    >${cError.stack.join('\n')}</pre>}
                     <h4>Actions:</h4>
                     {
                         actions.length > 0 ?
-                            <ul style={{
+                            <ol reversed style={{
                                 listStyle: 'list-item',
                                 fontSize: '13px'
-                            }}>
+                            }} start={props.count || actions.length - 1}>
                                 {actions
                                     .filter(action => {
                                         if (!isObject(action)) {
@@ -78,7 +88,7 @@ const BSOD = props => {
 
                                         return type !== CRITICAL;
                                     })
-                                    .map(action => {
+                                    .map((action, index) => {
                                         if (!isObject(action)) {
                                             return false;
                                         }
@@ -91,13 +101,13 @@ const BSOD = props => {
 
                                         let actionMessage = action[type];
 
-                                        return <li>
+                                        return <li key={index}>
                                             <p><strong>{type}: {actionMessage}</strong></p>
                                         </li>;
                                     })
                                     .filter(Boolean)
                                 }
-                            </ul> :
+                            </ol> :
                             <div>Nothing actions</div>
                     }
                 </div>
