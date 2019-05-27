@@ -25,4 +25,6 @@ function serializeError(stack, lineNumber) {
     return alt;
 }
 
-export { mixParams, serializeError };
+const CRITICAL = 'critical';
+
+export { mixParams, serializeError, CRITICAL };

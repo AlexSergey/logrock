@@ -1,8 +1,7 @@
 import LimitedArray from 'limited-array';
 import { isArray, isFunction } from 'valid-types';
 import { getCurrentDate, clone } from './utils';
-import {CRITICAL} from "./types";
-import { mixParams, serializeError } from "./errorHelpers";
+import { mixParams, serializeError, CRITICAL } from './errorHelpers';
 
 let stackCollection = new LimitedArray();
 

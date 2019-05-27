@@ -1,21 +1,19 @@
-<p align="center">
-    <div>
-        <a href="http://www.natrube.net/logrock/index.html">
-            <img src="http://www.natrube.net/logrock/LogRock.png" alt="This module can help you build error tracking & crash reporting system" />
-        </a>
-    </div>
-    <div>
-        <a href="http://www.natrube.net/logrock/index.html">Website</a>
-    </div>
-</p>
+<div align="center">
+    <a href="http://www.natrube.net/logrock/index.html">
+        <img src="http://www.natrube.net/logrock/LogRock.png" alt="This module can help you build error tracking & crash reporting system" />
+    </a>
+</div>
+<div align="center">
+    <a href="http://www.natrube.net/logrock/index.html">Website</a>
+</div>
 
 ## Table of Contents
 
-- [What is it](#whatisit)
+- [What is it](#what-is-it)
 - [Articles](#articles)
 - [Usage](#usage)
 - [Props](#props)
-- [Browser Compatibility](#browsercompatibility)
+- [Browser Compatibility](#browser-compatibility)
 - [License](#license)
 
 ## What is it?
@@ -142,11 +140,10 @@ export default function Toggle(props) {
 | sessionID | Number | If you want to connect your session with backend actions you can generate SessionID and add it to all your requests. |
 | bsod | ReactElement[Component] | Default Blue Screen Of Death component. You can change it to another. |
 | limit | Number[25] | Limit for actions that user made. |
-| getCurrentDate | Function[Function] | Format date function. By default - new Date().toLocaleString() |
-| onError | Function[console] | window.onerror callback. If an error happens it will call with all stack data. You can send it to ElasticSearch or Backend or save it to file for analyzing and understanding user's actions. |
-| onPrepareStack | Function[console] | This middleware will be called before you get stack in onError callback. In this callback, you can merge any extra data with your stack. For example, you can merge actual information about localization, theme, something settings etc. |
-| stdout | Function[console] | This callback can be fire when you put second parameter in the logger. For example: logger.log('Show it for user!', true); This callback needed to show information to user. You can setup notifier to it. See the code in <a href="https://github.com/AlexSergey/logrock/blob/master/example/src/Examples/index.jsx" target="_blank">provided example</a> |
-| console | Object[console] | By default - window.console. But you can replace it as you wish |
+| getCurrentDate | Function | Format date function. By default - new Date().toLocaleString() |
+| onError | Function | window.onerror callback. If an error happens it will call with all stack data. You can send it to ElasticSearch or Backend or save it to file for analyzing and understanding user's actions. |
+| onPrepareStack | Function | This middleware will be called before you get stack in onError callback. In this callback, you can merge any extra data with your stack. For example, you can merge actual information about localization, theme, something settings etc. |
+| stdout | Function | You can output log message to the console or if you set second parameter "true" you can show log to the user use any notifier. See the code in <a href="https://github.com/AlexSergey/logrock/blob/master/example/src/Examples/index.jsx" target="_blank">provided example</a> |
 
 - logger methods:
 

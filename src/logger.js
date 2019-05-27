@@ -1,7 +1,4 @@
-import logger from 'js-logger';
-import { getType } from './types';
-import { isFunction, isObject, isString } from 'valid-types';
-import consoleOutput from './console.output';
+import { isFunction, isObject, isString, isBoolean } from 'valid-types';
 import { mixParams } from './errorHelpers';
 import { stackCollection } from './stack';
 /**
@@ -12,33 +9,28 @@ import { stackCollection } from './stack';
  * error
  * debug
  * */
-logger.useDefaults();
 let count = 0;
 
-function setUp(props) {
-    logger.setHandler((messages, context) => {
-        if (!logger.ignoreLogging) {
-            if (props.active) {
-                let msg = messages[0];
-                let level = context.level.name.toLowerCase();
-                let notificationShow = messages[1];
-
-                let trackLevel = getType(level, false);
-
-                if (notificationShow && isFunction(props.stdout)) {
-                    props.stdout(getType(level, true), msg);
+class Base {
+    setUp(props) {
+        this.active = !!props.active;
+        this.stdout = props.stdout;
+    }
+    handler(message, level, important) {
+        if (!this.ignoreLogging) {
+            if (this.active) {
+                if (isFunction(this.stdout)) {
+                    this.stdout(level, message, important);
                 }
-
-                consoleOutput(trackLevel, msg, props.console);
 
                 let stackData;
 
-                if (isString(msg)) {
+                if (isString(message)) {
                     let temp = {};
-                    temp[trackLevel] = msg;
+                    temp[level] = message;
                     stackData = temp;
-                } else if (isObject(msg)) {
-                    stackData = msg;
+                } else if (isObject(message)) {
+                    stackData = message;
                 }
 
                 if (stackData) {
@@ -47,11 +39,31 @@ function setUp(props) {
                 count += 1;
             }
         }
-    });
+    }
 }
+
+class Logger extends Base {
+    log(message, important = false) {
+        this.handler(message, 'log', important);
+    }
+    info(message, important = false) {
+        this.handler(message, 'info', important);
+    }
+    debug(message, important = false) {
+        this.handler(message, 'debug', important);
+    }
+    warn(message, important = false) {
+        this.handler(message, 'warn', important);
+    }
+    error(message, important = false) {
+        this.handler(message, 'error', important);
+    }
+}
+
+let logger = new Logger();
 
 function getCounter() {
     return count;
 }
 
-export { setUp, logger, getCounter };
+export { logger, getCounter };

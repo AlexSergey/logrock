@@ -1,5 +1,7 @@
 import React from 'react';
 import Code from '../components/Code';
+import dayjs from "../Examples";
+import {LoggerContainer} from "../../../src";
 
 const LoggerContainerProps = () => {
     return <>
@@ -102,20 +104,21 @@ const LoggerContainerProps = () => {
                         Function
                     </td>
                     <td>
-                        This callback can be fire when you put second parameter in the logger. For example:
+                        <p>You can output log message to the console, or if you set second parameter "true" you can show log to the user use any notifier.</p>
+                        <p>For example:</p>
                         <Code height={'18px'} value={`logger.log('Show it for user!', true); `} />
-                        This callback needed to show information to user. You can setup notifier to it. See the code in <a href="https://github.com/AlexSergey/logrock/blob/master/example/src/Examples/index.jsx" target="_blank">provided example</a>
-                    </td>
-                </tr>
-                <tr>
-                    <th>
-                        console
-                    </th>
-                    <td>
-                        Object[console]
-                    </td>
-                    <td>
-                        By default - window.console. But you can replace it as you wish
+                        <p>stdout method:</p>
+                        <Code height={'165px'} value={`<LoggerContainer
+    stdout={(level, message, important) => {
+        console[level](message);
+
+        if (important) {
+            alert(message);
+        }
+    }}>
+        <App />
+</LoggerContainer>`} />
+                        See the code in <a href="https://github.com/AlexSergey/logrock/blob/master/example/src/Examples/index.jsx" target="_blank">provided example</a>
                     </td>
                 </tr>
             </tbody>

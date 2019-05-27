@@ -10,8 +10,21 @@ import { ToastContainer, toast } from 'react-toastify';
 global.sessionID = `sessionid-${Math.random().toString(36).substr(3, 9)}`;
 
 export default class Example extends Component {
-    showMessage(level, message) {
-        toast[level](message);
+    showMessage(level, message, important) {
+        console[level](message);
+
+        const notificatorTypes = {
+            log: 'success',
+            info: 'success',
+            error: 'error',
+            debug: 'warn',
+            warn: 'warn'
+        };
+        if (important &&
+            notificatorTypes[level] &&
+            toast[notificatorTypes[level]]) {
+            toast[notificatorTypes[level]](message);
+        }
     }
     render() {
         return <>
@@ -26,8 +39,8 @@ export default class Example extends Component {
                     return dayjs().format('YYYY-MM-DD HH:mm:ss');
                 }}
                 stdout={this.showMessage}
-                onError={stackData => {
-
+                onError={(stackData) => {
+                    console.log(stackData);
                 }}
                 onPrepareStack={stack => {
                     const BROWSER = `${name} ${version}`;

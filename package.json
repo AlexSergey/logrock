@@ -1,6 +1,6 @@
 {
   "name": "logrock",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "This module can help you build error tracking & crash reporting system.",
   "main": "dist/main.js",
   "scripts": {
@@ -29,7 +29,6 @@
     "react-component"
   ],
   "dependencies": {
-    "js-logger": "1.6.0",
     "valid-types": "1.0.2",
     "limited-array": "1.0.0"
   },

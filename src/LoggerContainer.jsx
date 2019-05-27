@@ -3,8 +3,9 @@ import PropTypes from 'prop-types';
 import { isString, isNumber, isFunction } from 'valid-types';
 import BSOD from './BSOD';
 import { stack, stackCollection, getStackData, onCriticalError } from './stack';
+import { CRITICAL } from './errorHelpers';
 import { getCurrentDate } from './utils';
-import { setUp, logger, getCounter } from './logger';
+import { logger, getCounter } from './logger';
 
 class LoggerContainer extends Component {
     static childContextTypes = {
@@ -19,7 +20,7 @@ class LoggerContainer extends Component {
             Error.stackTraceLimit = LIMIT;
         }
 
-        setUp(props);
+        logger.setUp(props);
 
         stackCollection.setLimit(LIMIT);
 
@@ -107,19 +108,11 @@ class LoggerContainer extends Component {
             window.onerror = (errorMsg, url, lineNumber, lineCount, trace) => {
                 this.unbindActions();
                 if (!this.__hasCriticalError) {
-                    if (this.props.console && isFunction(this.props.console.error)) {
-                        this.props.console.error('Critical error!');
-                    }
-
                     this.__hasCriticalError = true;
 
                     let stackData = onCriticalError(trace, lineNumber, this.props);
 
                     this.onError(stackData);
-
-                    if (this.props.console && isFunction(this.props.console.log)) {
-                        this.props.console.log(stackData);
-                    }
 
                     this.setState({
                         bsod: true
@@ -157,8 +150,7 @@ LoggerContainer.propTypes = {
     getCurrentDate: PropTypes.func,
     onError: PropTypes.func,
     onPrepareStack: PropTypes.func,
-    stdout: PropTypes.func,
-    console: PropTypes.object
+    stdout: PropTypes.func
 };
 
 LoggerContainer.defaultProps = {
@@ -167,8 +159,7 @@ LoggerContainer.defaultProps = {
     bsod: BSOD,
     sessionID: false,
     limit: 25,
-    getCurrentDate: getCurrentDate,
-    console: console
+    getCurrentDate: getCurrentDate
 };
 
 export default LoggerContainer;

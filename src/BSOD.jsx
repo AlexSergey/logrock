@@ -1,8 +1,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { CRITICAL } from './types';
 import { isArray, isObject, isFunction } from 'valid-types';
-import {logger} from "./logger";
+import { CRITICAL } from './errorHelpers';
 
 const BSOD = props => {
     const actions = props.stackData.actions;
@@ -74,39 +73,48 @@ const BSOD = props => {
                                 listStyle: 'list-item',
                                 fontSize: '13px'
                             }} start={props.count || actions.length - 1}>
-                                {actions
-                                    .filter(action => {
-                                        if (!isObject(action)) {
-                                            return false;
-                                        }
+                                {(() => {
+                                    let listOfActions = actions
+                                        .filter(action => {
+                                            if (!isObject(action)) {
+                                                return false;
+                                            }
 
-                                        let type = Object.keys(action)[0];
+                                            let type = Object.keys(action)[0];
 
-                                        if (!type) {
-                                            return false;
-                                        }
+                                            if (!type) {
+                                                return false;
+                                            }
 
-                                        return type !== CRITICAL;
-                                    })
-                                    .map((action, index) => {
-                                        if (!isObject(action)) {
-                                            return false;
-                                        }
+                                            return type !== CRITICAL;
+                                        })
+                                        .map(action => {
+                                            if (!isObject(action)) {
+                                                return false;
+                                            }
 
-                                        let type = Object.keys(action)[0];
+                                            let type = Object.keys(action)[0];
 
-                                        if (!type) {
-                                            return false;
-                                        }
+                                            if (!type) {
+                                                return false;
+                                            }
 
-                                        let actionMessage = action[type];
+                                            let actionMessage = action[type];
 
+                                            return {
+                                                actionMessage,
+                                                type
+                                            }
+                                        })
+                                        .filter(Boolean)
+                                        .reverse();
+
+                                    return listOfActions.map(({ actionMessage, type }, index) => {
                                         return <li key={index}>
                                             <p><strong>{type}: {actionMessage}</strong></p>
                                         </li>;
-                                    })
-                                    .filter(Boolean)
-                                }
+                                    });
+                                })()}
                             </ol> :
                             <div>Nothing actions</div>
                     }
