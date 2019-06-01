@@ -1,6 +1,6 @@
 {
   "name": "logrock",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "This module can help you build error tracking & crash reporting system.",
   "main": "dist/main.js",
   "scripts": {

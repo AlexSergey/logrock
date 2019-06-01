@@ -47,10 +47,10 @@ More information in my article:
 
 ```sh
 # NPM
-npm install react-sortable-tree --save
+npm install logrock --save
 
 # YARN
-yarn add react-sortable-tree
+yarn add logrock
 ```
 
 2. ES6 and CommonJS builds are available with each distribution. For example:
