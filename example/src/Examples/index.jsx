@@ -42,9 +42,6 @@ export default function() {
             onError={(stackData) => {
                 console.log(stackData);
             }}
-            onBeforeClose={stackData => {
-                console.log(stackData);
-            }}
             onPrepareStack={stack => {
                 const BROWSER = `${name} ${version}`;
                 const OS = `${os.family} ${os.architecture}-bit`;

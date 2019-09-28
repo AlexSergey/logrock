@@ -143,7 +143,6 @@ export default function Toggle(props) {
 | limit | Number[25] | Limit for actions that user made. |
 | getCurrentDate | Function | Format date function. By default - new Date().toLocaleString() |
 | onError | Function | window.onbeforeunload callback. It will be fire when user close the window |
-| onBeforeClose | Function | window.onerror callback. If an error happens it will call with all stack data. You can send it to ElasticSearch or Backend or save it to file for analyzing and understanding user's actions. |
 | onPrepareStack | Function | This middleware will be called before you get stack in onError callback. In this callback, you can merge any extra data with your stack. For example, you can merge actual information about localization, theme, something settings etc. |
 | stdout | Function | You can output log message to the console or if you set second parameter "true" you can show log to the user use any notifier. See the code in <a href="https://github.com/AlexSergey/logrock/blob/master/example/src/Examples/index.jsx" target="_blank">provided example</a> |
 

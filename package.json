@@ -1,8 +1,8 @@
 {
   "name": "logrock",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "This module can help you build error tracking & crash reporting system.",
-  "main": "dist/main.js",
+  "main": "dist/index.js",
   "scripts": {
     "start": "NODE_ENV=development node build",
     "build": "NODE_ENV=production node build"
