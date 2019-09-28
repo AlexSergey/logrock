@@ -14,24 +14,25 @@ const Approach = () => {
         </code>
         <br/>
         <p><strong>2. ES6 and CommonJS builds are available with each distribution. For example:</strong></p>
-        <Code height={'18px'} value={`import logger, { LoggerContainer } from 'logrock'`} />
+        <Code height={'18px'} value={`import logger, { LoggerContainer, LoggerContext } from 'logrock'`} />
         <p><strong>3. You need to wrap your app with {`<LoggerContainer>`}</strong></p>
-        <Code height={'455px'} width={'100%'} value={`import React, { Component } from 'react';
-import { LoggerContainer } from 'logrock';
+        <Code height={'465px'} width={'100%'} value={`import React, { useCallback, useContext } from 'react';
+import { LoggerContainer, LoggerContext } from 'logrock';
 
-export default class App extends Component {
-    showMessage = (level, message) => {
+export default function() {
+    const loggerCtx = useContext(LoggerContext);
+    const showMessage = useCallback((level, message, important) => {
         alert(message);
-    }
-    render() {
-        return <LoggerContainer
+    });
+
+    return <LoggerContainer
            sessionID={window.sessionID}
            limit={75} // stack limit. After overflowing the first item will be remove
            getCurrentDate={() => {
                 // You can replace default date to another format
                 return dayjs().format('YYYY-MM-DD HH:mm:ss');
            }}
-           stdout={this.showMessage} // show logs for your users
+           stdout={showMessage} // show logs for your users
            onError={stackData => {
                // Send stack on your Backend or ElasticSearch or save it to file etc.
                sendToServer(stack);

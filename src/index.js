@@ -1,5 +1,5 @@
-import LoggerContainer from './LoggerContainer';
+import LoggerContainer, { LoggerContext } from './LoggerContainer';
 import { logger } from './logger';
 
-export { LoggerContainer };
+export { LoggerContainer, LoggerContext };
 export default logger;

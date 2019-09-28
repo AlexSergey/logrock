@@ -1,17 +1,14 @@
-import React, { Component } from 'react';
+import React, { Component, createContext } from 'react';
 import PropTypes from 'prop-types';
 import { isString, isNumber, isFunction } from 'valid-types';
 import BSOD from './BSOD';
 import { stack, stackCollection, getStackData, onCriticalError } from './stack';
-import { CRITICAL } from './errorHelpers';
 import { getCurrentDate } from './utils';
 import { logger, getCounter } from './logger';
 
-class LoggerContainer extends Component {
-    static childContextTypes = {
-        logger: PropTypes.object
-    };
+const LoggerContext = createContext();
 
+class LoggerContainer extends Component {
     constructor(props) {
         super(props);
         const LIMIT = isNumber(this.props.limit) ? this.props.limit : 25;
@@ -52,15 +49,6 @@ class LoggerContainer extends Component {
         document.removeEventListener('keyup', this._onKeyUp);
         document.removeEventListener('mousedown', this._onMouseDown);
         document.removeEventListener('mouseup', this._onMouseUp);
-    }
-
-    getChildContext() {
-        return {
-            logger: {
-                getStackData: this.getStackData,
-                onError: this.onError
-            }
-        };
     }
 
     componentWillUnmount() {
@@ -123,14 +111,17 @@ class LoggerContainer extends Component {
     }
     render() {
         let Bsod = this.props.bsod;
-        return <>
+        return <LoggerContext.Provider value={{
+            getStackData: this.getStackData,
+            onError: this.onError
+        }}>
             {this.props.children}
             {this.props.bsodActive && this.state.bsod && <Bsod
                 count={getCounter()}
                 onClose={this.closeBsod}
                 stackData={this.getStackData()}
             />}
-        </>;
+        </LoggerContext.Provider>;
     }
 }
 
@@ -163,3 +154,5 @@ LoggerContainer.defaultProps = {
 };
 
 export default LoggerContainer;
+
+export { LoggerContext };

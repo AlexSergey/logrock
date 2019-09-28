@@ -14,7 +14,7 @@ const WhatIsIt = () => {
             <div>
                 <ul style={{listStyle: 'none'}}>
                     <li>English (work in progress)</li>
-                    <li><a href="" role="button" target="_blank">Russian</a></li>
+                    <li><a href="https://habr.com/ru/post/453652/" role="button" target="_blank">Russian</a></li>
                 </ul>
             </div>
         </div>

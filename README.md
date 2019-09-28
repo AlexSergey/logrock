@@ -36,7 +36,7 @@ More information in my article:
     English (work in progress)
 </p>
 <p>
-    <a href="">
+    <a href="https://habr.com/ru/post/453652/">
         Russian
     </a>
 </p>
@@ -56,28 +56,29 @@ yarn add logrock
 2. ES6 and CommonJS builds are available with each distribution. For example:
 
 ```js
-import logger, { LoggerContainer } from 'logrock';
+import logger, { LoggerContainer, LoggerContext } from 'logrock';
 ```
 
 3. You need to wrap your app with <LoggerContainer>
 
 ```jsx
-import React, { Component } from 'react';
-import { LoggerContainer } from 'logrock';
+import React, { useCallback, useContext } from 'react';
+import { LoggerContainer, LoggerContext } from 'logrock';
 
-export default class App extends Component {
-    showMessage = (level, message) => {
+export default function() {
+    const loggerCtx = useContext(LoggerContext);
+    const showMessage = useCallback((level, message, important) => {
         alert(message);
-    }
-    render() {
-        return <LoggerContainer
+    });
+    
+    return <LoggerContainer
            sessionID={window.sessionID}
            limit={75} // stack limit. After overflowing the first item will be remove
            getCurrentDate={() => {
                 // You can replace default date to another format
                 return dayjs().format('YYYY-MM-DD HH:mm:ss');
            }}
-           stdout={this.showMessage} // show logs for your users
+           stdout={showMessage} // show logs for your users
            onError={stackData => {
                // Send stack on your Backend or ElasticSearch or save it to file etc.
                sendToServer(stack);
@@ -141,7 +142,8 @@ export default function Toggle(props) {
 | bsod | ReactElement[Component] | Default Blue Screen Of Death component. You can change it to another. |
 | limit | Number[25] | Limit for actions that user made. |
 | getCurrentDate | Function | Format date function. By default - new Date().toLocaleString() |
-| onError | Function | window.onerror callback. If an error happens it will call with all stack data. You can send it to ElasticSearch or Backend or save it to file for analyzing and understanding user's actions. |
+| onError | Function | window.onbeforeunload callback. It will be fire when user close the window |
+| onBeforeClose | Function | window.onerror callback. If an error happens it will call with all stack data. You can send it to ElasticSearch or Backend or save it to file for analyzing and understanding user's actions. |
 | onPrepareStack | Function | This middleware will be called before you get stack in onError callback. In this callback, you can merge any extra data with your stack. For example, you can merge actual information about localization, theme, something settings etc. |
 | stdout | Function | You can output log message to the console or if you set second parameter "true" you can show log to the user use any notifier. See the code in <a href="https://github.com/AlexSergey/logrock/blob/master/example/src/Examples/index.jsx" target="_blank">provided example</a> |
 
