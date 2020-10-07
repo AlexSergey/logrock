@@ -1,3 +1,5 @@
+# This module has been deprecated. Please use [Rockpack](https://github.com/AlexSergey/rockpack)
+
 <div align="center">
     <a href="http://www.natrube.net/logrock/index.html">
         <img src="http://www.natrube.net/logrock/LogRock.png" alt="This module can help you build error tracking & crash reporting system" />
