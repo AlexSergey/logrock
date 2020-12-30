@@ -17,7 +17,7 @@
     "type": "git",
     "url": "git+https://github.com/AlexSergey/logrock.git"
   },
-  "author": "Aleksandrov Sergey <gooddev.sergey@gmail.com> (https://github.com/AlexSergey/rockpack)",
+  "author": "Aleksandrov Sergey <gooddev.sergey@gmail.com> (https://github.com/AlexSergey/logrock)",
   "license": "MIT",
   "homepage": "http://www.natrube.net/logrock/index.html",
   "bugs": {
