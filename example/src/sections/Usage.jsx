@@ -7,10 +7,10 @@ const Approach = () => {
         <p><strong>1. Installation:</strong></p>
         <code>
             # NPM<br />
-            npm install react-sortable-tree --save<br />
+            npm install logrock --save<br />
             <br />
             # YARN<br />
-            yarn add react-sortable-tree<br />
+            yarn add logrock<br />
         </code>
         <br/>
         <p><strong>2. ES6 and CommonJS builds are available with each distribution. For example:</strong></p>
