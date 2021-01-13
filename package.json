@@ -1,6 +1,6 @@
 {
   "name": "logrock",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "This module can help you build error tracking & crash reporting system for your React application.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
