@@ -6,10 +6,10 @@ export interface LoggerProps {
 }
 
 export interface LoggerInterface {
-  log(message: string,   important?: boolean): void;
-  info(message: string,  important?: boolean): void;
+  log(message: string, important?: boolean): void;
+  info(message: string, important?: boolean): void;
   debug(message: string, important?: boolean): void;
-  warn(message: string,  important?: boolean): void;
+  warn(message: string, important?: boolean): void;
   error(message: string, important?: boolean): void;
   getCounter(): number;
   getStackCollection(): LimitedArray<Action>;
