@@ -106,7 +106,7 @@ export default class LoggerContainer extends Component<LoggerContainerProps, Log
       !isBackend()
     ) {
       this.bindActions();
-      window.onerror = this.handlerError;
+      window.addEventListener('error', this.handlerError);
     }
   }
 
@@ -114,15 +114,15 @@ export default class LoggerContainer extends Component<LoggerContainerProps, Log
     this.unbindActions();
   }
 
-  handlerError = (errorMsg: string, url: string, lineNumber: number, lineCount: number, trace: Error): void => {
+  handlerError = (e: ErrorEvent): void => {
+    const { lineno, error } = e;
     this.unbindActions();
     if (!this.__hasCriticalError) {
       this.__hasCriticalError = true;
-
       const stackData = onCriticalError(this.stack, logger.getStackCollection(), {
         getCurrentDate: this.props.getCurrentDate,
         onPrepareStack: this.props.onPrepareStack,
-      }, trace, lineNumber);
+      }, error, lineno);
 
       this.onError(stackData);
 
@@ -177,7 +177,7 @@ export default class LoggerContainer extends Component<LoggerContainerProps, Log
   }
 
   unbindActions(): void {
-    window.onerror = null;
+    window.removeEventListener('error', this.handlerError);
     document.removeEventListener('keydown', this._onKeyDown);
     document.removeEventListener('keyup', this._onKeyUp);
     document.removeEventListener('mousedown', this._onMouseDown);

@@ -1,7 +1,5 @@
 import React from 'react';
 import Code from '../components/Code';
-import dayjs from "../Examples";
-import {LoggerContainer} from "../../../src";
 
 const LoggerContainerProps = () => {
     return <>
