@@ -36,8 +36,8 @@
   ],
   "private": false,
   "dependencies": {
-    "limited-array": "2.0.2",
-    "valid-types": "2.0.3"
+    "limited-array": "^2.0.2",
+    "valid-types": "^2.0.5"
   },
   "devDependencies": {
     "@rockpack/codestyle": "1.8.0",
