@@ -1,6 +1,6 @@
 {
   "name": "logrock",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "This module can help you build error tracking & crash reporting system for your React application.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -40,9 +40,9 @@
     "valid-types": "^2.0.5"
   },
   "devDependencies": {
-    "@rockpack/codestyle": "1.8.0",
-    "@rockpack/compiler": "1.8.0",
-    "@rockpack/tester": "1.8.0",
+    "@rockpack/codestyle": "2.0.1",
+    "@rockpack/compiler": "2.0.1",
+    "@rockpack/tester": "2.0.1",
     "@types/cheerio": "0.22.23",
     "@types/enzyme": "3.10.8",
     "@types/enzyme-adapter-react-16": "1.0.6",

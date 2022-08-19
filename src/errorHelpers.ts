@@ -1,4 +1,4 @@
-import { LoggerTypes, CriticalError } from './types';
+import { LoggerLevels, CriticalError } from './types';
 
 export const mixUrl = (props: CriticalError): CriticalError => {
   const href = globalThis && globalThis.location && globalThis.location.href ? globalThis.location.href : '';
@@ -30,7 +30,7 @@ export const isCritical = (type: string): boolean => CRITICAL === type;
 
 export const getCritical = (): string => CRITICAL;
 
-export const createCritical = (trace: Error, lineNumber: number): { [LoggerTypes.critical]: CriticalError } => {
+export const createCritical = (trace: Error, lineNumber: number): { [LoggerLevels.critical]: CriticalError } => {
   const criticalError: CriticalError = serializeError(trace, lineNumber);
   return {
     [CRITICAL]: mixUrl(criticalError)

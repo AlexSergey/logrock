@@ -144,7 +144,6 @@ const BSOD = (props: BSODInterface): JSX.Element => {
 
                   return listOfActions.map(({ actionMessage, type }:
                   { actionMessage: string; type: string }, index) => (
-                    // eslint-disable-next-line react/no-array-index-key
                     <li key={index}>
                       <p><strong>{type}: {actionMessage}</strong></p>
                     </li>

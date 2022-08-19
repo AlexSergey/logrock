@@ -2,7 +2,8 @@ import LimitedArray from 'limited-array';
 
 export interface LoggerProps {
   active?: boolean;
-  stdout?: Function|undefined;
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  stdout?: Function | undefined;
 }
 
 export interface LoggerInterface {
@@ -16,7 +17,7 @@ export interface LoggerInterface {
   setUp(props: LoggerProps): void;
 }
 
-export enum LoggerTypes {
+export enum LoggerLevels {
   log = 'log',
   info = 'info',
   warn = 'warn',
@@ -33,20 +34,20 @@ export type CriticalError = {
 };
 
 export interface Action {
-  [LoggerTypes.log]: string;
-  [LoggerTypes.info]: string;
-  [LoggerTypes.warn]: string;
-  [LoggerTypes.error]: string;
-  [LoggerTypes.debug]: string;
-  [LoggerTypes.critical]: CriticalError;
+  [LoggerLevels.log]: string;
+  [LoggerLevels.info]: string;
+  [LoggerLevels.warn]: string;
+  [LoggerLevels.error]: string;
+  [LoggerLevels.debug]: string;
+  [LoggerLevels.critical]: CriticalError;
 }
 
-export type StackData = { [LoggerTypes.log]: string } |
-{ [LoggerTypes.info]: string } |
-{ [LoggerTypes.warn]: string } |
-{ [LoggerTypes.error]: string } |
-{ [LoggerTypes.debug]: string } |
-{ [LoggerTypes.critical]: CriticalError };
+export type StackData = { [LoggerLevels.log]: string } |
+{ [LoggerLevels.info]: string } |
+{ [LoggerLevels.warn]: string } |
+{ [LoggerLevels.error]: string } |
+{ [LoggerLevels.debug]: string } |
+{ [LoggerLevels.critical]: CriticalError };
 
 export interface Stack {
   onPrepareStack?: (s: Stack) => Stack;
@@ -59,9 +60,9 @@ export interface Stack {
     href?: string;
   };
   actions: Action[];
-  mousePressed: number|null;
-  keyboardPressed: number|null;
-  sessionId: number|string;
+  mousePressed: number | null;
+  keyboardPressed: number | null;
+  sessionId: number | string;
 }
 
 export interface PropsUtils {

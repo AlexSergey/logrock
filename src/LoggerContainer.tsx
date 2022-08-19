@@ -1,4 +1,4 @@
-import React, { ComponentType, Component, createContext, isValidElement, useContext } from 'react';
+import React, { Component, FunctionComponent, createContext, isValidElement, useContext, PropsWithChildren } from 'react';
 import { isString, isNumber, isFunction } from 'valid-types';
 import BSOD, { BSODInterface } from './BSOD';
 import { getStackData, onCriticalError } from './stack';
@@ -34,7 +34,7 @@ interface LoggerContainerProps {
   active?: boolean;
   bsodActive?: boolean;
   sessionID?: boolean | string | number;
-  bsod?: ComponentType<BSODInterface>;
+  bsod?: FunctionComponent<BSODInterface>;
   limit?: number;
   getCurrentDate?: () => string;
   onError?: (stack: Stack) => void;
@@ -46,7 +46,7 @@ interface LoggerContainerState {
   bsod: boolean;
 }
 
-export default class LoggerContainer extends Component<LoggerContainerProps, LoggerContainerState> {
+export default class LoggerContainer extends Component<PropsWithChildren<LoggerContainerProps>, LoggerContainerState> {
   private __hasCriticalError = false;
 
   private readonly stack;
