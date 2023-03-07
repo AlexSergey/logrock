@@ -1,6 +1,6 @@
 {
   "name": "logrock",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "description": "This module can help you build error tracking & crash reporting system for your React application.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -40,18 +40,20 @@
     "valid-types": "^2.0.5"
   },
   "devDependencies": {
-    "@rockpack/codestyle": "2.0.1",
-    "@rockpack/compiler": "2.0.1",
-    "@rockpack/tester": "2.0.1",
-    "@types/cheerio": "0.22.23",
-    "@types/enzyme": "3.10.8",
-    "@types/enzyme-adapter-react-16": "1.0.6",
-    "@types/jest": "26.0.12",
-    "@types/react": "17.0.0",
-    "@types/react-dom": "16.9.8",
-    "enzyme": "3.11.0",
-    "enzyme-adapter-react-16": "1.15.4",
-    "react": "16.13.1",
-    "react-dom": "16.13.1"
+    "@rockpack/tsconfig": "^3.0.3",
+    "@rockpack/codestyle": "^3.0.3",
+    "@rockpack/compiler": "^3.0.3",
+    "@rockpack/tester": "^3.0.3",
+    "@types/cheerio": "^0.22.31",
+    "@types/enzyme": "^3.10.12",
+    "@wojtekmaj/enzyme-adapter-react-17": "^0.8.0",
+    "@types/jest": "^29.4.0",
+    "@types/react": "^17.0.0",
+    "@types/react-dom": "^17.0.19",
+    "enzyme": "^3.11.0"
+  },
+  "peerDependencies": {
+    "react": ">=17",
+    "react-dom": ">=17"
   }
 }

@@ -1,6 +1,7 @@
-import { isFunction } from 'valid-types';
 import LimitedArray from 'limited-array';
-import { StackData, Action, LoggerInterface } from './types';
+import { isFunction } from 'valid-types';
+
+import { StackData, IAction, ILogger } from './types';
 
 /**
  * Types:
@@ -18,12 +19,12 @@ class Logger {
 
   private ignoreLogging = false;
 
-  private stackCollection: LimitedArray<Action>;
+  private stackCollection: LimitedArray<IAction>;
 
   private _count = 0;
 
   constructor() {
-    this.stackCollection = new LimitedArray<Action>();
+    this.stackCollection = new LimitedArray<IAction>();
   }
 
   log(message: string, important?: boolean): void {
@@ -46,10 +47,7 @@ class Logger {
     this._handler(message, 'error', !!important);
   }
 
-  setUp(props: {
-    active?: boolean;
-    stdout?: (level: string, message: string, important?: boolean) => void;
-  }): void {
+  setUp(props: { active?: boolean; stdout?: (level: string, message: string, important?: boolean) => void }): void {
     if (typeof props.active === 'boolean') {
       this.active = Boolean(props.active);
     }
@@ -59,10 +57,7 @@ class Logger {
   }
 
   _handler(message: string, level: string, important: boolean): void {
-    if (
-      !this.ignoreLogging &&
-      this.active
-    ) {
+    if (!this.ignoreLogging && this.active) {
       if (isFunction(this.stdout)) {
         this.stdout(level, message, important);
       }
@@ -78,7 +73,7 @@ class Logger {
       }
 
       if (stackData) {
-        this.stackCollection.add(Object.assign({}, stackData));
+        this.stackCollection.add({ ...stackData });
       }
       this._count += 1;
     }
@@ -86,9 +81,9 @@ class Logger {
 
   getCounter = (): number => this._count;
 
-  getStackCollection = (): LimitedArray<Action> => this.stackCollection;
+  getStackCollection = (): LimitedArray<IAction> => this.stackCollection;
 }
 
-export const createLogger = (): LoggerInterface => new Logger();
+export const createLogger = (): ILogger => new Logger();
 
 export const logger = createLogger();

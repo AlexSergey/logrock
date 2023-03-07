@@ -1,13 +1,11 @@
 {
   "compilerOptions": {
-    "outDir": "./dist/",
-    "jsx": "react",
-    "declaration": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "lib": ["esnext", "dom"]
+    "strict": false,
+    "exactOptionalPropertyTypes": false,
+    "jsx": "react-jsx"
   },
-  "exclude":  [
+  "extends": "@rockpack/tsconfig",
+  "exclude": [
     "./node_modules/**/*"
   ],
   "include": [

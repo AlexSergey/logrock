@@ -1,98 +1,103 @@
-import React, { Component, FunctionComponent, createContext, isValidElement, useContext, PropsWithChildren } from 'react';
+import { Component, FunctionComponent, createContext, isValidElement, useContext, PropsWithChildren } from 'react';
 import { isString, isNumber, isFunction } from 'valid-types';
-import BSOD, { BSODInterface } from './BSOD';
-import { getStackData, onCriticalError } from './stack';
-import { getCurrentDate } from './utils';
-import { Stack, LoggerInterface } from './types';
-import { logger } from './logger';
 
-interface LoggerContextInterface {
-  getStackData: () => Stack;
-  onError: (stack: Stack) => void;
+import BsodComponent, { IBSOD } from './bsod';
+import { logger } from './logger';
+import { getStackData, onCriticalError } from './stack';
+import { IStack, ILogger } from './types';
+import { getCurrentDate } from './utils';
+
+interface ILoggerContext {
+  getStackData: () => IStack;
+  onError: (stack: IStack) => void;
 }
 
-export const LoggerContext = createContext<LoggerContextInterface>(null);
+export const LoggerContext = createContext<null | ILoggerContext>(null);
 
 const isBackend = (): boolean => typeof window === 'undefined';
 
-interface LoggerApiInterface {
-  getStackData: () => Stack;
-  triggerError: (stack: Stack) => void;
+interface ILoggerApi {
+  getStackData: () => IStack;
+  triggerError: (stack: IStack) => void;
 }
 
-export const useLoggerApi = (): LoggerApiInterface => {
-  const ctx = useContext(LoggerContext);
+export const useLoggerApi = (): ILoggerApi => {
+  const ctx = useContext(LoggerContext) as ILoggerContext;
 
   return {
     getStackData: ctx.getStackData,
-    triggerError: ctx.onError
+    triggerError: ctx.onError,
   };
 };
 
-interface LoggerContainerProps {
-  logger?: LoggerInterface;
+interface ILoggerContainerProps {
+  logger?: ILogger;
   active?: boolean;
   bsodActive?: boolean;
   sessionID?: boolean | string | number;
-  bsod?: FunctionComponent<BSODInterface>;
+  bsod?: FunctionComponent<IBSOD>;
   limit?: number;
   getCurrentDate?: () => string;
-  onError?: (stack: Stack) => void;
-  onPrepareStack?: (stack: Stack) => Stack;
+  onError?: (stack: IStack) => void;
+  onPrepareStack?: (stack: IStack) => IStack;
   stdout?: (level: string, message: string, important?: boolean) => void;
 }
 
-interface LoggerContainerState {
+interface ILoggerContainerState {
   bsod: boolean;
 }
 
-export default class LoggerContainer extends Component<PropsWithChildren<LoggerContainerProps>, LoggerContainerState> {
+// eslint-disable-next-line import/no-default-export
+export default class LoggerContainer extends Component<
+  PropsWithChildren<ILoggerContainerProps>,
+  ILoggerContainerState
+> {
   private __hasCriticalError = false;
 
   private readonly stack;
 
-  static defaultProps = {
-    logger,
-    active: true,
-    bsodActive: true,
-    sessionID: false,
-    limit: 25,
-    getCurrentDate
-  };
-
-  constructor(props) {
+  constructor(
+    props: ILoggerContainerProps = {
+      active: true,
+      bsodActive: true,
+      getCurrentDate,
+      limit: 25,
+      logger,
+      sessionID: false,
+    },
+  ) {
     super(props);
 
     this.state = {
-      bsod: false
+      bsod: false,
     };
 
     this.stack = {
+      actions: logger.getStackCollection().data,
+      env: {},
       keyboardPressed: null,
       mousePressed: null,
+      onPrepareStack: typeof this.props.onPrepareStack === 'function' ? this.props.onPrepareStack : (): void => {},
       session: {},
-      env: {},
-      actions: logger.getStackCollection().data
+      sessionId: undefined,
     };
 
     const LIMIT = isNumber(this.props.limit) ? this.props.limit : 25;
 
     logger.setUp({
-      active: props.active
+      active: props.active as boolean,
     });
 
-    logger.getStackCollection().setLimit(LIMIT);
-
-    if (isFunction(this.props.onPrepareStack)) {
-      this.stack.onPrepareStack = this.props.onPrepareStack;
-    }
+    logger.getStackCollection().setLimit(LIMIT as number);
 
     if (isFunction(this.props.stdout)) {
       logger.setUp({
-        stdout: this.props.stdout
+        stdout: this.props.stdout,
       });
     }
 
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     this.stack.session.start = isFunction(this.props.getCurrentDate) ? this.props.getCurrentDate() : getCurrentDate();
 
     if (isString(this.props.sessionID) || isNumber(this.props.sessionID)) {
@@ -100,17 +105,14 @@ export default class LoggerContainer extends Component<PropsWithChildren<LoggerC
     }
   }
 
-  componentDidMount(): void {
-    if (
-      this.props.active &&
-      !isBackend()
-    ) {
+  override componentDidMount(): void {
+    if (this.props.active && !isBackend()) {
       this.bindActions();
       window.addEventListener('error', this.handlerError);
     }
   }
 
-  componentWillUnmount(): void {
+  override componentWillUnmount(): void {
     this.unbindActions();
   }
 
@@ -119,15 +121,21 @@ export default class LoggerContainer extends Component<PropsWithChildren<LoggerC
     this.unbindActions();
     if (!this.__hasCriticalError) {
       this.__hasCriticalError = true;
-      const stackData = onCriticalError(this.stack, logger.getStackCollection(), {
-        getCurrentDate: this.props.getCurrentDate,
-        onPrepareStack: this.props.onPrepareStack,
-      }, error, lineno);
+      const stackData = onCriticalError(
+        this.stack,
+        logger.getStackCollection(),
+        {
+          getCurrentDate: this.props.getCurrentDate,
+          onPrepareStack: this.props.onPrepareStack,
+        },
+        error,
+        lineno,
+      );
 
       this.onError(stackData);
 
       this.setState({
-        bsod: true
+        bsod: true,
       });
     }
   };
@@ -152,20 +160,21 @@ export default class LoggerContainer extends Component<PropsWithChildren<LoggerC
     });
   };
 
-  getStackData = (): Stack => getStackData(this.stack, logger.getStackCollection(), {
-    getCurrentDate: this.props.getCurrentDate,
-    onPrepareStack: this.props.onPrepareStack,
-  });
+  getStackData = (): IStack =>
+    getStackData(this.stack, logger.getStackCollection(), {
+      getCurrentDate: this.props.getCurrentDate,
+      onPrepareStack: this.props.onPrepareStack,
+    });
 
-  onError = (stackData: Stack): void => {
-    if (isFunction(this.props.onError)) {
+  onError = (stackData: IStack): void => {
+    if (typeof this.props.onError === 'function') {
       this.props.onError(stackData);
     }
   };
 
   closeBsod = (): void => {
     this.setState({
-      bsod: false
+      bsod: false,
     });
   };
 
@@ -184,23 +193,20 @@ export default class LoggerContainer extends Component<PropsWithChildren<LoggerC
     document.removeEventListener('mouseup', this._onMouseUp);
   }
 
-  render(): JSX.Element {
-    const Bsod = isValidElement(this.props.bsod) ? this.props.bsod : BSOD;
+  override render(): JSX.Element {
+    const Bsod = isValidElement(this.props.bsod) ? this.props.bsod : BsodComponent;
 
     return (
-      <LoggerContext.Provider value={{
-        getStackData: this.getStackData,
-        onError: this.onError
-      }}
+      <LoggerContext.Provider
+        value={{
+          getStackData: this.getStackData,
+          onError: this.onError,
+        }}
       >
         {this.props.children}
 
         {this.props.bsodActive && this.state.bsod && (
-          <Bsod
-            count={logger.getCounter()}
-            onClose={this.closeBsod}
-            stackData={this.getStackData()}
-          />
+          <Bsod count={logger.getCounter()} onClose={this.closeBsod} stackData={this.getStackData()} />
         )}
       </LoggerContext.Provider>
     );

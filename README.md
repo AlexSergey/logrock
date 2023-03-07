@@ -116,10 +116,10 @@ export default function Toggle(props) {
 
 We have added a logger in which the information is divided into 2 parts. React.Toggle shows us that this action happened at the level of React, the Toggle component, and then we have a verbal explanation of the action and the current state that came to this component.
 
-If a critical error occurs in the system, we will have a **BSOD** with a detailed description of the user's actions. It will also be possible to send this stack to the error analysis system or ElasticSearch in order to quickly catch errors that occurred among our users.
+If a critical error occurs in the system, we will have a **Bsod** with a detailed description of the user's actions. It will also be possible to send this stack to the error analysis system or ElasticSearch in order to quickly catch errors that occurred among our users.
 
 <p align="right">
-  <img alt="BSOD" src="https://www.rockpack.io/readme_assets/rockpack_logger_bsod.jpg" />
+  <img alt="Bsod" src="https://www.rockpack.io/readme_assets/rockpack_logger_bsod.jpg" />
 </p>
 
 *- When logging applications, you need to put logs in the most confusing and complex parts of the code, so you will understand what happened at this stage.*
@@ -133,9 +133,9 @@ If a critical error occurs in the system, we will have a **BSOD** with a detaile
 | Prop | Type | Description |
 | --- | --- | --- |
 | active | Boolean[true] | Enable / disable logging. It is recommended to disable logging during the testing phase. |
-| bsodActive | Boolean[true] | Enable / disable BSOD output. It is recommended to disable for Production  |
+| bsodActive | Boolean[true] | Enable / disable Bsod output. It is recommended to disable for Production  |
 | sessionID | Number | If you need to associate logging with Backend calls - a single session for Frontend and Backend will allow you to do this |
-| bsod | ReactElement[Component] | You can set your BSOD Component |
+| bsod | ReactElement[Component] | You can set your Bsod Component |
 | limit | Number[25] | Stack length limit. On overflow, the first element will be removed |
 | getCurrentDate | Function | Date format when an error occurred. Default - new Date().toLocaleString() |
 | onError | Function | window.onbeforeunload callback. In this callback, you can handle the stack or send it to the Backend |

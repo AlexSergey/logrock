@@ -1,5 +1,5 @@
-import { Stack } from './types';
+import { IStack } from './types';
 
 export const getCurrentDate = (): string => new Date().toLocaleString();
 
-export const clone = (obj: Stack): Stack => JSON.parse(JSON.stringify(obj));
+export const clone = (obj: IStack): IStack => JSON.parse(JSON.stringify(obj));

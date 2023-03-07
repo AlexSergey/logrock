@@ -1,20 +1,20 @@
 import LimitedArray from 'limited-array';
 
-export interface LoggerProps {
+export interface ILoggerProps {
   active?: boolean;
   // eslint-disable-next-line @typescript-eslint/ban-types
   stdout?: Function | undefined;
 }
 
-export interface LoggerInterface {
+export interface ILogger {
   log(message: string, important?: boolean): void;
   info(message: string, important?: boolean): void;
   debug(message: string, important?: boolean): void;
   warn(message: string, important?: boolean): void;
   error(message: string, important?: boolean): void;
   getCounter(): number;
-  getStackCollection(): LimitedArray<Action>;
-  setUp(props: LoggerProps): void;
+  getStackCollection(): LimitedArray<IAction>;
+  setUp(props: ILoggerProps): void;
 }
 
 export enum LoggerLevels {
@@ -23,7 +23,7 @@ export enum LoggerLevels {
   warn = 'warn',
   error = 'error',
   debug = 'debug',
-  critical = 'critical'
+  critical = 'critical',
 }
 
 export type CriticalError = {
@@ -33,7 +33,7 @@ export type CriticalError = {
   url?: string;
 };
 
-export interface Action {
+export interface IAction {
   [LoggerLevels.log]: string;
   [LoggerLevels.info]: string;
   [LoggerLevels.warn]: string;
@@ -42,15 +42,16 @@ export interface Action {
   [LoggerLevels.critical]: CriticalError;
 }
 
-export type StackData = { [LoggerLevels.log]: string } |
-{ [LoggerLevels.info]: string } |
-{ [LoggerLevels.warn]: string } |
-{ [LoggerLevels.error]: string } |
-{ [LoggerLevels.debug]: string } |
-{ [LoggerLevels.critical]: CriticalError };
+export type StackData =
+  | { [LoggerLevels.log]: string }
+  | { [LoggerLevels.info]: string }
+  | { [LoggerLevels.warn]: string }
+  | { [LoggerLevels.error]: string }
+  | { [LoggerLevels.debug]: string }
+  | { [LoggerLevels.critical]: CriticalError };
 
-export interface Stack {
-  onPrepareStack?: (s: Stack) => Stack;
+export interface IStack {
+  onPrepareStack?: (s: IStack) => IStack;
   session: {
     start: string;
     end: string;
@@ -59,13 +60,13 @@ export interface Stack {
     lang?: string;
     href?: string;
   };
-  actions: Action[];
+  actions: IAction[];
   mousePressed: number | null;
   keyboardPressed: number | null;
   sessionId: number | string;
 }
 
-export interface PropsUtils {
+export interface IPropsUtils {
   getCurrentDate?: () => string;
-  onPrepareStack?: (stack: Stack) => Stack;
+  onPrepareStack?: (stack: IStack) => IStack;
 }
