@@ -36,15 +36,15 @@
   ],
   "private": false,
   "dependencies": {
-    "limited-array": "^2.0.2",
+    "limited-array": "^2.0.3",
     "valid-types": "^2.0.5"
   },
   "devDependencies": {
-    "@rockpack/tsconfig": "^3.0.3",
-    "@rockpack/codestyle": "^3.0.3",
-    "@rockpack/compiler": "^3.0.3",
-    "@rockpack/tester": "^3.0.3",
-    "@types/cheerio": "^0.22.31",
+    "@rockpack/tsconfig": "^4.4.1",
+    "@rockpack/codestyle": "^4.4.1",
+    "@rockpack/compiler": "^4.4.1",
+    "@rockpack/tester": "^4.4.1",
+    "@types/cheerio": "^0.22.35",
     "@types/enzyme": "^3.10.12",
     "@wojtekmaj/enzyme-adapter-react-17": "^0.8.0",
     "@types/jest": "^29.4.0",

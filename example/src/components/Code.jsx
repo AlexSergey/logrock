@@ -1,24 +1,26 @@
 import React from 'react';
-import AceEditor from 'react-ace';
-import 'brace';
-import 'brace/mode/jsx';
-import 'brace/theme/twilight';
+import Editor from 'react-simple-code-editor';
+import {highlight, languages} from 'prismjs/components/prism-core';
+import 'prismjs/components/prism-clike';
+import 'prismjs/components/prism-javascript';
+import 'prismjs/themes/prism.css';
 
 const Code = props => {
     let height = props.height || '500px';
     let width = props.width || '500px';
-
     return (
-        <AceEditor
-            fontSize={16}
-            mode="jsx"
-            theme="twilight"
-            name="UNIQUE_ID_OF_DIV"
-            editorProps={{ $blockScrolling: true }}
+        <Editor
             value={props.value}
+            onValueChange={code => {}}
+            highlight={code => highlight(code, languages.js)}
             height={height}
             width={width}
-            style={{marginBottom: '20px'}}
+            padding={10}
+            style={{
+                fontFamily: '"Fira code", "Fira Mono", monospace',
+                fontSize: 14,
+                marginBottom: '20px'
+            }}
         />
     );
 };
