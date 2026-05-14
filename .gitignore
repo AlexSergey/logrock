@@ -43,9 +43,6 @@ build/Release
 node_modules/
 jspm_packages/
 
-# TypeScript v1 declaration files
-typings/
-
 # Optional npm cache directory
 .npm
 
@@ -60,9 +57,6 @@ typings/
 
 # Yarn Integrity file
 .yarn-integrity
-
-# dotenv environment variables file
-*.env
 
 # next.js build output
 .next
@@ -89,14 +83,15 @@ Thumbs.db
 .DS_Store
 
 # Test reports
+reports
 test-reports
 
 # Custom config for prettier and eslint
 .eslintrc.custom.js
 .prettierrc.custom.js
 
-# dotenv file ought to ignore
+# dotenv environment variables file
 .env
 
 # Custom rules
-lib
+lib/

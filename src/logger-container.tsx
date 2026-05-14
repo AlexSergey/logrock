@@ -1,28 +1,38 @@
-import { Component, FunctionComponent, createContext, isValidElement, useContext, PropsWithChildren } from 'react';
-import { isString, isNumber, isFunction } from 'valid-types';
+import {
+  createContext,
+  FunctionComponent,
+  PropsWithChildren,
+  ReactElement,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
-import BsodComponent, { IBSOD } from './bsod';
+import BsodComponent, { BsodProps } from './components/bsod';
+import { getStackData, onCriticalError } from './helpers/stack';
+import { getCurrentDate } from './helpers/utils';
 import { logger } from './logger';
-import { getStackData, onCriticalError } from './stack';
-import { IStack, ILogger } from './types';
-import { getCurrentDate } from './utils';
+import { LogEntry, LoggerInstance, Stack } from './types';
 
-interface ILoggerContext {
-  getStackData: () => IStack;
-  onError: (stack: IStack) => void;
+interface LoggerContextValue {
+  getStackData: () => Stack;
+  onError: (stack: Stack) => void;
 }
 
-export const LoggerContext = createContext<null | ILoggerContext>(null);
+export const LoggerContext = createContext<LoggerContextValue | null>(null);
 
 const isBackend = (): boolean => typeof window === 'undefined';
 
-interface ILoggerApi {
-  getStackData: () => IStack;
-  triggerError: (stack: IStack) => void;
+interface LoggerApiReturn {
+  getStackData: () => Stack;
+  triggerError: (stack: Stack) => void;
 }
 
-export const useLoggerApi = (): ILoggerApi => {
-  const ctx = useContext(LoggerContext) as ILoggerContext;
+export const useLoggerApi = (): LoggerApiReturn => {
+  const ctx = useContext(LoggerContext) as LoggerContextValue;
 
   return {
     getStackData: ctx.getStackData,
@@ -30,185 +40,156 @@ export const useLoggerApi = (): ILoggerApi => {
   };
 };
 
-interface ILoggerContainerProps {
-  logger?: ILogger;
+interface LoggerContainerProps {
   active?: boolean;
+  bsod?: FunctionComponent<BsodProps>;
   bsodActive?: boolean;
-  sessionID?: boolean | string | number;
-  bsod?: FunctionComponent<IBSOD>;
-  limit?: number;
   getCurrentDate?: () => string;
-  onError?: (stack: IStack) => void;
-  onPrepareStack?: (stack: IStack) => IStack;
+  limit?: number;
+  logger?: LoggerInstance;
+  onError?: (stack: Stack) => void;
+  onPrepareStack?: (stack: Stack) => Stack;
+  sessionID?: boolean | number | string;
   stdout?: (level: string, message: string, important?: boolean) => void;
 }
 
-interface ILoggerContainerState {
-  bsod: boolean;
+interface StackRef {
+  actions: LogEntry[];
+  env: { href?: string; lang?: string };
+  keyboardPressed: null | string;
+  mousePressed: null | number;
+  onPrepareStack?: (s: Stack) => Stack;
+  session: { end?: string; start?: string };
+  sessionId: number | string | undefined;
 }
 
-// eslint-disable-next-line import/no-default-export
-export default class LoggerContainer extends Component<
-  PropsWithChildren<ILoggerContainerProps>,
-  ILoggerContainerState
-> {
-  private __hasCriticalError = false;
+export default function LoggerContainer({
+  active = true,
+  bsod: BsodProp,
+  bsodActive = true,
+  children,
+  getCurrentDate: getCurrentDateFn,
+  limit = 25,
+  onError: onErrorCallback,
+  onPrepareStack,
+  sessionID,
+  stdout,
+}: PropsWithChildren<LoggerContainerProps>): ReactElement {
+  const [bsodVisible, setBsodVisible] = useState(false);
+  const hasCriticalError = useRef(false);
 
-  private readonly stack;
-
-  constructor(
-    props: ILoggerContainerProps = {
-      active: true,
-      bsodActive: true,
-      getCurrentDate,
-      limit: 25,
-      logger,
-      sessionID: false,
+  const stack = useRef<StackRef>({
+    actions: logger.getStackCollection().data,
+    env: {},
+    keyboardPressed: null,
+    mousePressed: null,
+    ...(typeof onPrepareStack === 'function' ? { onPrepareStack } : {}),
+    session: {
+      start: typeof getCurrentDateFn === 'function' ? getCurrentDateFn() : getCurrentDate(),
     },
-  ) {
-    super(props);
+    sessionId: typeof sessionID === 'string' || typeof sessionID === 'number' ? sessionID : undefined,
+  });
 
-    this.state = {
-      bsod: false,
+  useEffect(() => {
+    logger.setUp({ active });
+    logger.getStackCollection().setLimit(limit);
+    if (typeof stdout === 'function') {
+      logger.setUp({ stdout });
+    }
+  }, [active, limit, stdout]);
+
+  const buildProps = useCallback(
+    () => ({
+      ...(typeof getCurrentDateFn === 'function' ? { getCurrentDate: getCurrentDateFn } : {}),
+      ...(typeof onPrepareStack === 'function' ? { onPrepareStack } : {}),
+    }),
+    [getCurrentDateFn, onPrepareStack],
+  );
+
+  const getStackDataFn = useCallback(
+    (): Stack => getStackData(stack.current as Stack, logger.getStackCollection(), buildProps()),
+    [buildProps],
+  );
+
+  const handleError = useCallback(
+    (stackData: Stack): void => {
+      if (typeof onErrorCallback === 'function') {
+        onErrorCallback(stackData);
+      }
+    },
+    [onErrorCallback],
+  );
+
+  const closeBsod = useCallback((): void => {
+    setBsodVisible(false);
+  }, []);
+
+  useEffect(() => {
+    if (!active || isBackend()) return;
+
+    const onMouseDown = (e: MouseEvent): void => {
+      stack.current.mousePressed = e.button;
     };
-
-    this.stack = {
-      actions: logger.getStackCollection().data,
-      env: {},
-      keyboardPressed: null,
-      mousePressed: null,
-      onPrepareStack: typeof this.props.onPrepareStack === 'function' ? this.props.onPrepareStack : (): void => {},
-      session: {},
-      sessionId: undefined,
-    };
-
-    const LIMIT = isNumber(this.props.limit) ? this.props.limit : 25;
-
-    logger.setUp({
-      active: props.active as boolean,
-    });
-
-    logger.getStackCollection().setLimit(LIMIT as number);
-
-    if (isFunction(this.props.stdout)) {
-      logger.setUp({
-        stdout: this.props.stdout,
+    const onMouseUp = (): void => {
+      setTimeout(() => {
+        stack.current.mousePressed = null;
       });
-    }
-
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    this.stack.session.start = isFunction(this.props.getCurrentDate) ? this.props.getCurrentDate() : getCurrentDate();
-
-    if (isString(this.props.sessionID) || isNumber(this.props.sessionID)) {
-      this.stack.sessionId = this.props.sessionID;
-    }
-  }
-
-  override componentDidMount(): void {
-    if (this.props.active && !isBackend()) {
-      this.bindActions();
-      window.addEventListener('error', this.handlerError);
-    }
-  }
-
-  override componentWillUnmount(): void {
-    this.unbindActions();
-  }
-
-  handlerError = (e: ErrorEvent): void => {
-    const { lineno, error } = e;
-    this.unbindActions();
-    if (!this.__hasCriticalError) {
-      this.__hasCriticalError = true;
+    };
+    const onKeyDown = (e: KeyboardEvent): void => {
+      stack.current.keyboardPressed = e.code;
+    };
+    const onKeyUp = (): void => {
+      setTimeout(() => {
+        stack.current.keyboardPressed = null;
+      });
+    };
+    const onError = (e: ErrorEvent): void => {
+      e.preventDefault();
+      if (hasCriticalError.current) return;
+      hasCriticalError.current = true;
+      document.removeEventListener('mousedown', onMouseDown);
+      document.removeEventListener('mouseup', onMouseUp);
+      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('keyup', onKeyUp);
       const stackData = onCriticalError(
-        this.stack,
+        stack.current as Stack,
         logger.getStackCollection(),
-        {
-          getCurrentDate: this.props.getCurrentDate,
-          onPrepareStack: this.props.onPrepareStack,
-        },
-        error,
-        lineno,
+        buildProps(),
+        e.error as Error,
+        e.lineno,
       );
+      handleError(stackData);
+      setBsodVisible(true);
+    };
 
-      this.onError(stackData);
+    document.addEventListener('mousedown', onMouseDown);
+    document.addEventListener('mouseup', onMouseUp);
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('keyup', onKeyUp);
+    window.addEventListener('error', onError);
 
-      this.setState({
-        bsod: true,
-      });
-    }
-  };
+    return (): void => {
+      window.removeEventListener('error', onError);
+      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('keyup', onKeyUp);
+      document.removeEventListener('mousedown', onMouseDown);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+  }, [active, buildProps, handleError]);
 
-  _onMouseDown = (e: MouseEvent): void => {
-    this.stack.mousePressed = e && e.button;
-  };
+  const contextValue = useMemo(
+    () => ({ getStackData: getStackDataFn, onError: handleError }),
+    [getStackDataFn, handleError],
+  );
 
-  _onKeyDown = (e: KeyboardEvent): void => {
-    this.stack.keyboardPressed = e && e.code;
-  };
+  const Bsod = typeof BsodProp === 'function' ? BsodProp : BsodComponent;
 
-  _onKeyUp = (): void => {
-    setTimeout(() => {
-      this.stack.keyboardPressed = null;
-    });
-  };
-
-  _onMouseUp = (): void => {
-    setTimeout(() => {
-      this.stack.mousePressed = null;
-    });
-  };
-
-  getStackData = (): IStack =>
-    getStackData(this.stack, logger.getStackCollection(), {
-      getCurrentDate: this.props.getCurrentDate,
-      onPrepareStack: this.props.onPrepareStack,
-    });
-
-  onError = (stackData: IStack): void => {
-    if (typeof this.props.onError === 'function') {
-      this.props.onError(stackData);
-    }
-  };
-
-  closeBsod = (): void => {
-    this.setState({
-      bsod: false,
-    });
-  };
-
-  bindActions(): void {
-    document.addEventListener('mousedown', this._onMouseDown);
-    document.addEventListener('mouseup', this._onMouseUp);
-    document.addEventListener('keydown', this._onKeyDown);
-    document.addEventListener('keyup', this._onKeyUp);
-  }
-
-  unbindActions(): void {
-    window.removeEventListener('error', this.handlerError);
-    document.removeEventListener('keydown', this._onKeyDown);
-    document.removeEventListener('keyup', this._onKeyUp);
-    document.removeEventListener('mousedown', this._onMouseDown);
-    document.removeEventListener('mouseup', this._onMouseUp);
-  }
-
-  override render(): JSX.Element {
-    const Bsod = isValidElement(this.props.bsod) ? this.props.bsod : BsodComponent;
-
-    return (
-      <LoggerContext.Provider
-        value={{
-          getStackData: this.getStackData,
-          onError: this.onError,
-        }}
-      >
-        {this.props.children}
-
-        {this.props.bsodActive && this.state.bsod && (
-          <Bsod count={logger.getCounter()} onClose={this.closeBsod} stackData={this.getStackData()} />
-        )}
-      </LoggerContext.Provider>
-    );
-  }
+  return (
+    <LoggerContext.Provider value={contextValue}>
+      {children}
+      {bsodActive && bsodVisible && (
+        <Bsod count={logger.getCounter()} onClose={closeBsod} stackData={getStackDataFn()} />
+      )}
+    </LoggerContext.Provider>
+  );
 }

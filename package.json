@@ -1,28 +1,8 @@
 {
   "name": "logrock",
-  "version": "3.3.0",
+  "version": "4.0.0",
+  "private": false,
   "description": "This module can help you build error tracking & crash reporting system for your React application.",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "scripts": {
-    "start": "cross-env NODE_ENV=development node build",
-    "build": "cross-env NODE_ENV=production node build",
-    "typing": "cross-env NODE_ENV=production tsc -p . --noEmit",
-    "lint": "cross-env NODE_ENV=production eslint \"src/**\"",
-    "test": "node tests.js",
-    "test:watch": "node tests.js --watch",
-    "production": "npm run lint && npm run typing && npm test && npm run build && npm publish"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/AlexSergey/logrock.git"
-  },
-  "author": "Aleksandrov Sergey <gooddev.sergey@gmail.com> (https://github.com/AlexSergey/logrock)",
-  "license": "MIT",
-  "homepage": "http://www.natrube.net/logrock/index.html",
-  "bugs": {
-    "url": "https://github.com/AlexSergey/logrock/issues"
-  },
   "keywords": [
     "logger",
     "logging",
@@ -34,26 +14,59 @@
     "crash-reporting",
     "react-component"
   ],
-  "private": false,
-  "dependencies": {
-    "limited-array": "^2.0.3",
-    "valid-types": "^2.0.5"
+  "homepage": "http://www.natrube.net/logrock/index.html",
+  "bugs": {
+    "url": "https://github.com/AlexSergey/logrock/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlexSergey/logrock.git"
+  },
+  "license": "MIT",
+  "author": "Aleksandrov Sergey <gooddev.sergey@gmail.com> (https://github.com/AlexSergey/logrock)",
+  "exports": {
+    ".": {
+      "import": "./lib/esm/index.mjs",
+      "require": "./lib/cjs/index.cjs"
+    }
+  },
+  "main": "./lib/cjs/index.cjs",
+  "module": "./lib/esm/index.mjs",
+  "types": "./dist/types/index.d.ts",
+  "scripts": {
+    "build": "node scripts.build --mode=production",
+    "format": "npm run format:prettier && npm run format:code",
+    "format:code": "eslint . --fix",
+    "format:prettier": "prettier --write \"src/**/*.{ts,tsx,json}\"",
+    "lint": "npm run lint:ts && npm run lint:code",
+    "lint:code": "eslint .",
+    "lint:commit": "commitlint -e",
+    "lint:ts": "tsc --noEmit",
+    "pre-commit": "lint-staged",
+    "production": "npm run lint && npm test && npm run build && npm publish",
+    "test": "node scripts.tests.js",
+    "test:watch": "node scripts.tests.js --watch"
   },
   "devDependencies": {
-    "@rockpack/tsconfig": "^4.4.1",
-    "@rockpack/codestyle": "^4.4.1",
-    "@rockpack/compiler": "^4.4.1",
-    "@rockpack/tester": "^4.4.1",
-    "@types/cheerio": "^0.22.35",
-    "@types/enzyme": "^3.10.12",
-    "@wojtekmaj/enzyme-adapter-react-17": "^0.8.0",
+    "@rockpack/codestyle": "7.2.0",
+    "@rockpack/compiler": "7.2.0",
+    "@rockpack/tester": "7.2.0",
+    "@rockpack/tsconfig": "7.2.0",
+    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/react": "16.3.2",
     "@types/jest": "^29.4.0",
-    "@types/react": "^17.0.0",
-    "@types/react-dom": "^17.0.19",
-    "enzyme": "^3.11.0"
+    "@types/node": "24.12.4",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "axios-mock-adapter": "2.1.0",
+    "husky": "9.1.7",
+    "lint-staged": "16.4.0",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "source-map": "0.8.0-beta.0"
   },
   "peerDependencies": {
-    "react": ">=17",
-    "react-dom": ">=17"
+    "react": ">=19",
+    "react-dom": ">=19"
   }
 }

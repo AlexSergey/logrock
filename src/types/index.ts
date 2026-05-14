@@ -1,72 +1,70 @@
-import LimitedArray from 'limited-array';
-
-export interface ILoggerProps {
-  active?: boolean;
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  stdout?: Function | undefined;
-}
-
-export interface ILogger {
-  log(message: string, important?: boolean): void;
-  info(message: string, important?: boolean): void;
-  debug(message: string, important?: boolean): void;
-  warn(message: string, important?: boolean): void;
-  error(message: string, important?: boolean): void;
-  getCounter(): number;
-  getStackCollection(): LimitedArray<IAction>;
-  setUp(props: ILoggerProps): void;
-}
+import LimitedArray from '../helpers/limited-array';
 
 export enum LoggerLevels {
-  log = 'log',
-  info = 'info',
-  warn = 'warn',
-  error = 'error',
-  debug = 'debug',
   critical = 'critical',
+  debug = 'debug',
+  error = 'error',
+  info = 'info',
+  log = 'log',
+  warn = 'warn',
 }
 
-export type CriticalError = {
+export interface CriticalError {
   line: number;
-  stack: string[];
   message: string;
+  stack: string[];
   url?: string;
-};
+}
 
-export interface IAction {
-  [LoggerLevels.log]: string;
-  [LoggerLevels.info]: string;
-  [LoggerLevels.warn]: string;
-  [LoggerLevels.error]: string;
-  [LoggerLevels.debug]: string;
-  [LoggerLevels.critical]: CriticalError;
+export type LogEntry =
+  | { [LoggerLevels.critical]: CriticalError }
+  | { [LoggerLevels.debug]: string }
+  | { [LoggerLevels.error]: string }
+  | { [LoggerLevels.info]: string }
+  | { [LoggerLevels.log]: string }
+  | { [LoggerLevels.warn]: string };
+
+export interface LoggerInstance {
+  debug(message: string, important?: boolean): void;
+  error(message: string, important?: boolean): void;
+  getCounter(): number;
+  getStackCollection(): LimitedArray<LogEntry>;
+  info(message: string, important?: boolean): void;
+  log(message: string, important?: boolean): void;
+  setUp(props: LoggerSetupOptions): void;
+  warn(message: string, important?: boolean): void;
+}
+
+export interface LoggerSetupOptions {
+  active?: boolean;
+  stdout?: (level: string, message: string, important?: boolean) => void;
+}
+
+export interface Stack {
+  actions: LogEntry[];
+  env: {
+    href?: string;
+    lang?: string;
+  };
+  keyboardPressed: null | string;
+  mousePressed: null | number;
+  onPrepareStack?: (s: Stack) => Stack;
+  session: {
+    end: string;
+    start: string;
+  };
+  sessionId: number | string | undefined;
 }
 
 export type StackData =
-  | { [LoggerLevels.log]: string }
-  | { [LoggerLevels.info]: string }
-  | { [LoggerLevels.warn]: string }
-  | { [LoggerLevels.error]: string }
+  | { [LoggerLevels.critical]: CriticalError }
   | { [LoggerLevels.debug]: string }
-  | { [LoggerLevels.critical]: CriticalError };
+  | { [LoggerLevels.error]: string }
+  | { [LoggerLevels.info]: string }
+  | { [LoggerLevels.log]: string }
+  | { [LoggerLevels.warn]: string };
 
-export interface IStack {
-  onPrepareStack?: (s: IStack) => IStack;
-  session: {
-    start: string;
-    end: string;
-  };
-  env: {
-    lang?: string;
-    href?: string;
-  };
-  actions: IAction[];
-  mousePressed: number | null;
-  keyboardPressed: number | null;
-  sessionId: number | string;
-}
-
-export interface IPropsUtils {
+export interface StackUtilProps {
   getCurrentDate?: () => string;
-  onPrepareStack?: (stack: IStack) => IStack;
+  onPrepareStack?: (stack: Stack) => Stack;
 }

@@ -1,14 +1,9 @@
 {
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "strict": false,
-    "exactOptionalPropertyTypes": false,
-    "jsx": "react-jsx"
+    "module": "esnext",
+    "types": ["jest", "node", "webpack/module", "@testing-library/jest-dom"]
   },
-  "extends": "@rockpack/tsconfig",
-  "exclude": [
-    "./node_modules/**/*"
-  ],
-  "include": [
-    "./src/**/*"
-  ]
+  "exclude": ["./node_modules/**/*"],
+  "include": ["./src/**/*", "./jest.setup.ts"]
 }

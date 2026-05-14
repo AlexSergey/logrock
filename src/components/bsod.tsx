@@ -1,19 +1,19 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
+import { ReactElement } from 'react';
 import { createPortal } from 'react-dom';
-import { isArray, isObject, isFunction } from 'valid-types';
 
-import { isCritical, getCritical } from './error-helpers';
-import { IStack } from './types';
+import { isCritical } from '../helpers/error-helpers';
+import { LoggerLevels, Stack } from '../types';
 
-export interface IBSOD {
+export interface BsodProps {
   count: number;
   onClose: () => void;
-  stackData: IStack;
+  stackData: Stack;
 }
 
-const Bsod = (props: IBSOD): JSX.Element => {
+const Bsod = (props: BsodProps): ReactElement => {
   const { actions } = props.stackData;
-  const cError = actions[actions.length - 1] ? actions[actions.length - 1][getCritical()] : {};
+  const lastAction = actions[actions.length - 1];
+  const cError = lastAction && LoggerLevels.critical in lastAction ? lastAction[LoggerLevels.critical] : undefined;
 
   return createPortal(
     <div
@@ -37,12 +37,10 @@ const Bsod = (props: IBSOD): JSX.Element => {
           width: '100%',
         }}
       >
-        {isFunction(props.onClose) && (
+        {typeof props.onClose === 'function' && (
           <button
-            type="button"
             onClick={props.onClose}
             style={{
-              WebkitAppearance: 'none',
               background: '#eee',
               border: 0,
               cursor: 'pointer',
@@ -53,9 +51,11 @@ const Bsod = (props: IBSOD): JSX.Element => {
               right: '25px',
               textAlign: 'center',
               top: '25px',
+              WebkitAppearance: 'none',
               width: '30px',
               zIndex: 1000,
             }}
+            type="button"
           >
             X
           </button>
@@ -83,7 +83,7 @@ const Bsod = (props: IBSOD): JSX.Element => {
             textAlign: 'left',
           }}
         >
-          {cError && isArray(cError.stack) && (
+          {cError && Array.isArray(cError.stack) && (
             <pre
               style={{
                 background: 'none',
@@ -100,16 +100,16 @@ const Bsod = (props: IBSOD): JSX.Element => {
           {actions.length > 0 ? (
             <ol
               reversed
+              start={props.count || actions.length - 1}
               style={{
                 fontSize: '13px',
                 listStyle: 'list-item',
               }}
-              start={props.count || actions.length - 1}
             >
-              {((): JSX.Element[] => {
+              {((): ReactElement[] => {
                 const listOfActions = actions
                   .filter((action) => {
-                    if (!isObject(action)) {
+                    if (action === null || typeof action !== 'object' || Array.isArray(action)) {
                       return false;
                     }
 
@@ -122,28 +122,28 @@ const Bsod = (props: IBSOD): JSX.Element => {
                     return !isCritical(type);
                   })
                   .map((action) => {
-                    if (!isObject(action)) {
-                      return false;
+                    if (action === null || typeof action !== 'object' || Array.isArray(action)) {
+                      return null;
                     }
 
                     const type = Object.keys(action)[0];
 
                     if (!type) {
-                      return false;
+                      return null;
                     }
 
-                    const actionMessage = action[type];
+                    const actionMessage = action[type as keyof typeof action] as string;
 
                     return {
                       actionMessage,
                       type,
                     };
                   })
-                  .filter(Boolean)
+                  .filter((x): x is { actionMessage: string; type: string } => x !== null)
                   .reverse();
 
                 return listOfActions.map(
-                  ({ actionMessage, type }: { actionMessage: string; type: string }, index): JSX.Element => (
+                  ({ actionMessage, type }, index): ReactElement => (
                     <li key={index}>
                       <p>
                         <strong>
@@ -165,5 +165,4 @@ const Bsod = (props: IBSOD): JSX.Element => {
   );
 };
 
-// eslint-disable-next-line import/no-default-export
 export default Bsod;

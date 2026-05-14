@@ -1,4 +1,4 @@
-import { LoggerLevels, CriticalError } from './types';
+import { CriticalError, LoggerLevels } from '../types';
 
 export const mixUrl = (props: CriticalError): CriticalError => {
   const href = globalThis && globalThis.location && globalThis.location.href ? globalThis.location.href : '';
@@ -6,23 +6,11 @@ export const mixUrl = (props: CriticalError): CriticalError => {
   return { ...(href !== '' ? { url: href } : {}), ...props };
 };
 
-export const serializeError = (stack: Error, lineNumber: number): CriticalError => {
-  const alt = {
-    line: lineNumber,
-    message: '',
-    stack: [],
-  };
-
-  Object.getOwnPropertyNames(stack).forEach((key) => {
-    if (key === 'stack') {
-      alt[key] = stack[key].split('\n');
-    } else {
-      alt[key] = stack[key];
-    }
-  }, stack);
-
-  return alt;
-};
+export const serializeError = (stack: Error, lineNumber: number): CriticalError => ({
+  line: lineNumber,
+  message: stack.message ?? '',
+  stack: stack.stack ? stack.stack.split('\n') : [],
+});
 
 const CRITICAL = 'critical';
 
