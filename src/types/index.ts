@@ -62,8 +62,8 @@ export interface IStack {
   };
   actions: IAction[];
   mousePressed: number | null;
-  keyboardPressed: number | null;
-  sessionId: number | string;
+  keyboardPressed: string | null;
+  sessionId: number | string | undefined;
 }
 
 export interface IPropsUtils {

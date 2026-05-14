@@ -10,10 +10,10 @@ describe('logger tests', () => {
   });
 
   describe('Test active logger', () => {
-    ['log', 'info', 'debug', 'warn', 'error'].forEach((logMethod, index) => {
+    (['log', 'info', 'debug', 'warn', 'error'] as const).forEach((logMethod, index) => {
       it(`Logger test ${logMethod} method`, () => {
         logger[logMethod](`test ${logMethod} method`);
-        const logItem = logger.getStackCollection().getData()[index];
+        const logItem = logger.getStackCollection().getData()[index]!;
 
         expect(Object.keys(logItem)[0]).toBe(logMethod);
 
@@ -28,10 +28,8 @@ describe('logger tests', () => {
         active: false,
       });
       const stackLengthBefore = logger.getStackCollection().getData().length;
-      ['log', 'info', 'debug', 'warn', 'error'].forEach((logMethod) => {
-        if (logger[logMethod] && typeof logger[logMethod] === 'function') {
-          logger[logMethod](`test ${logMethod} method`);
-        }
+      (['log', 'info', 'debug', 'warn', 'error'] as const).forEach((logMethod) => {
+        logger[logMethod](`test ${logMethod} method`);
       });
       const stackLengthAfter = logger.getStackCollection().getData().length;
 

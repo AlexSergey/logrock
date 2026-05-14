@@ -1,9 +1,9 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
+import { ReactElement } from 'react';
 import { createPortal } from 'react-dom';
-import { isArray, isObject, isFunction } from 'valid-types';
 
-import { isCritical, getCritical } from './error-helpers';
-import { IStack } from './types';
+import { isCritical } from './error-helpers';
+import { IStack, LoggerLevels } from './types';
 
 export interface IBSOD {
   count: number;
@@ -11,9 +11,10 @@ export interface IBSOD {
   stackData: IStack;
 }
 
-const Bsod = (props: IBSOD): JSX.Element => {
+const Bsod = (props: IBSOD): ReactElement => {
   const { actions } = props.stackData;
-  const cError = actions[actions.length - 1] ? actions[actions.length - 1][getCritical()] : {};
+  const lastAction = actions[actions.length - 1];
+  const cError = lastAction ? lastAction[LoggerLevels.critical] : undefined;
 
   return createPortal(
     <div
@@ -37,7 +38,7 @@ const Bsod = (props: IBSOD): JSX.Element => {
           width: '100%',
         }}
       >
-        {isFunction(props.onClose) && (
+        {typeof props.onClose === 'function' && (
           <button
             type="button"
             onClick={props.onClose}
@@ -83,7 +84,7 @@ const Bsod = (props: IBSOD): JSX.Element => {
             textAlign: 'left',
           }}
         >
-          {cError && isArray(cError.stack) && (
+          {cError && Array.isArray(cError.stack) && (
             <pre
               style={{
                 background: 'none',
@@ -106,10 +107,10 @@ const Bsod = (props: IBSOD): JSX.Element => {
               }}
               start={props.count || actions.length - 1}
             >
-              {((): JSX.Element[] => {
+              {((): ReactElement[] => {
                 const listOfActions = actions
                   .filter((action) => {
-                    if (!isObject(action)) {
+                    if (action === null || typeof action !== 'object' || Array.isArray(action)) {
                       return false;
                     }
 
@@ -122,28 +123,28 @@ const Bsod = (props: IBSOD): JSX.Element => {
                     return !isCritical(type);
                   })
                   .map((action) => {
-                    if (!isObject(action)) {
-                      return false;
+                    if (action === null || typeof action !== 'object' || Array.isArray(action)) {
+                      return null;
                     }
 
                     const type = Object.keys(action)[0];
 
                     if (!type) {
-                      return false;
+                      return null;
                     }
 
-                    const actionMessage = action[type];
+                    const actionMessage = action[type as keyof typeof action] as string;
 
                     return {
                       actionMessage,
                       type,
                     };
                   })
-                  .filter(Boolean)
+                  .filter((x): x is { actionMessage: string; type: string } => x !== null)
                   .reverse();
 
                 return listOfActions.map(
-                  ({ actionMessage, type }: { actionMessage: string; type: string }, index): JSX.Element => (
+                  ({ actionMessage, type }, index): ReactElement => (
                     <li key={index}>
                       <p>
                         <strong>

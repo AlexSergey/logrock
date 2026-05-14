@@ -1,12 +1,15 @@
-import { mount } from 'enzyme';
+import { render } from '@testing-library/react';
 
 import { logger } from './logger';
 import LoggerContainer, { useLoggerApi } from './logger-container';
+import { IStack } from './types';
 
-let loggerApi;
-let level;
-let message;
-let stack;
+type LoggerApi = ReturnType<typeof useLoggerApi>;
+
+let loggerApi: LoggerApi;
+let level: string;
+let message: string;
+let stack: IStack;
 
 beforeAll(() => {
   const App = (): null => {
@@ -15,7 +18,7 @@ beforeAll(() => {
     return null;
   };
 
-  mount(
+  render(
     <LoggerContainer
       onError={(s): void => {
         stack = s;
@@ -38,7 +41,7 @@ it('test useLogger hook', () => {
   expect(typeof logger.error === 'function').toBe(true);
 });
 
-['log', 'info', 'debug', 'warn', 'error'].forEach((logMethod) => {
+(['log', 'info', 'debug', 'warn', 'error'] as const).forEach((logMethod) => {
   test(`test logger ${logMethod} method`, () => {
     logger[logMethod](`test ${logMethod} message`);
 

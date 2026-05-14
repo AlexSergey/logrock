@@ -1,5 +1,4 @@
 import LimitedArray from 'limited-array';
-import { isFunction } from 'valid-types';
 
 import { StackData, IAction, ILogger } from './types';
 
@@ -15,7 +14,7 @@ import { StackData, IAction, ILogger } from './types';
 class Logger {
   public active = true;
 
-  public stdout?: (level: string, message: string, important: boolean) => void = null;
+  public stdout?: (level: string, message: string, important: boolean) => void;
 
   private ignoreLogging = false;
 
@@ -58,14 +57,14 @@ class Logger {
 
   _handler(message: string, level: string, important: boolean): void {
     if (!this.ignoreLogging && this.active) {
-      if (isFunction(this.stdout)) {
+      if (typeof this.stdout === 'function') {
         this.stdout(level, message, important);
       }
 
-      let stackData: StackData;
+      let stackData: StackData | undefined;
 
       if (typeof message === 'string') {
-        const temp = {};
+        const temp: Record<string, string> = {};
         temp[level] = message;
         stackData = temp as StackData;
       } else if (typeof message === 'object') {

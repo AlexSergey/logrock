@@ -1,24 +1,20 @@
 import LimitedArray from 'limited-array';
-import { isArray, isFunction } from 'valid-types';
 
 import { createCritical } from './error-helpers';
 import { IStack, IPropsUtils, IAction } from './types';
 import { getCurrentDate, clone } from './utils';
 
 const getStackData = (stack: IStack, stackCollection: LimitedArray<IAction>, props: IPropsUtils): IStack => {
-  const lang =
-    globalThis.navigator && globalThis.navigator.languages && isArray(globalThis.navigator.languages)
-      ? globalThis.navigator.languages[0]
-      : '';
+  const lang = globalThis.navigator?.languages?.[0] ?? '';
   const href = globalThis.location && globalThis.location.href ? globalThis.location.href : '';
   const actions = stackCollection.getData();
 
-  stack.session.end = isFunction(props.getCurrentDate) ? props.getCurrentDate() : getCurrentDate();
+  stack.session.end = typeof props.getCurrentDate === 'function' ? props.getCurrentDate() : getCurrentDate();
   stack.actions = actions;
   stack.env.lang = lang;
   stack.env.href = href;
 
-  if (typeof props.onPrepareStack !== 'undefined' && isFunction(props.onPrepareStack)) {
+  if (typeof props.onPrepareStack === 'function') {
     props.onPrepareStack(stack);
   }
 

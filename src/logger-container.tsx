@@ -1,10 +1,9 @@
-import { Component, FunctionComponent, createContext, isValidElement, useContext, PropsWithChildren } from 'react';
-import { isString, isNumber, isFunction } from 'valid-types';
+import { Component, FunctionComponent, ReactElement, createContext, isValidElement, useContext, PropsWithChildren } from 'react';
 
 import BsodComponent, { IBSOD } from './bsod';
 import { logger } from './logger';
 import { getStackData, onCriticalError } from './stack';
-import { IStack, ILogger } from './types';
+import { IStack, ILogger, IAction } from './types';
 import { getCurrentDate } from './utils';
 
 interface ILoggerContext {
@@ -54,7 +53,15 @@ export default class LoggerContainer extends Component<
 > {
   private __hasCriticalError = false;
 
-  private readonly stack;
+  private readonly stack: {
+    actions: IAction[];
+    env: { lang?: string; href?: string };
+    keyboardPressed: string | null;
+    mousePressed: number | null;
+    onPrepareStack?: (s: IStack) => IStack;
+    session: { start?: string; end?: string };
+    sessionId: number | string | undefined;
+  };
 
   constructor(
     props: ILoggerContainerProps = {
@@ -77,30 +84,29 @@ export default class LoggerContainer extends Component<
       env: {},
       keyboardPressed: null,
       mousePressed: null,
-      onPrepareStack: typeof this.props.onPrepareStack === 'function' ? this.props.onPrepareStack : (): void => {},
+      ...(typeof this.props.onPrepareStack === 'function' ? { onPrepareStack: this.props.onPrepareStack } : {}),
       session: {},
       sessionId: undefined,
     };
 
-    const LIMIT = isNumber(this.props.limit) ? this.props.limit : 25;
+    const LIMIT = typeof this.props.limit === 'number' ? this.props.limit : 25;
 
     logger.setUp({
       active: props.active as boolean,
     });
 
-    logger.getStackCollection().setLimit(LIMIT as number);
+    logger.getStackCollection().setLimit(LIMIT);
 
-    if (isFunction(this.props.stdout)) {
+    if (typeof this.props.stdout === 'function') {
       logger.setUp({
         stdout: this.props.stdout,
       });
     }
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    this.stack.session.start = isFunction(this.props.getCurrentDate) ? this.props.getCurrentDate() : getCurrentDate();
+    this.stack.session.start =
+      typeof this.props.getCurrentDate === 'function' ? this.props.getCurrentDate() : getCurrentDate();
 
-    if (isString(this.props.sessionID) || isNumber(this.props.sessionID)) {
+    if (typeof this.props.sessionID === 'string' || typeof this.props.sessionID === 'number') {
       this.stack.sessionId = this.props.sessionID;
     }
   }
@@ -122,11 +128,11 @@ export default class LoggerContainer extends Component<
     if (!this.__hasCriticalError) {
       this.__hasCriticalError = true;
       const stackData = onCriticalError(
-        this.stack,
+        this.stack as IStack,
         logger.getStackCollection(),
         {
-          getCurrentDate: this.props.getCurrentDate,
-          onPrepareStack: this.props.onPrepareStack,
+          ...(typeof this.props.getCurrentDate === 'function' ? { getCurrentDate: this.props.getCurrentDate } : {}),
+          ...(typeof this.props.onPrepareStack === 'function' ? { onPrepareStack: this.props.onPrepareStack } : {}),
         },
         error,
         lineno,
@@ -141,11 +147,11 @@ export default class LoggerContainer extends Component<
   };
 
   _onMouseDown = (e: MouseEvent): void => {
-    this.stack.mousePressed = e && e.button;
+    this.stack.mousePressed = e ? e.button : null;
   };
 
   _onKeyDown = (e: KeyboardEvent): void => {
-    this.stack.keyboardPressed = e && e.code;
+    this.stack.keyboardPressed = e ? e.code : null;
   };
 
   _onKeyUp = (): void => {
@@ -161,9 +167,9 @@ export default class LoggerContainer extends Component<
   };
 
   getStackData = (): IStack =>
-    getStackData(this.stack, logger.getStackCollection(), {
-      getCurrentDate: this.props.getCurrentDate,
-      onPrepareStack: this.props.onPrepareStack,
+    getStackData(this.stack as IStack, logger.getStackCollection(), {
+      ...(typeof this.props.getCurrentDate === 'function' ? { getCurrentDate: this.props.getCurrentDate } : {}),
+      ...(typeof this.props.onPrepareStack === 'function' ? { onPrepareStack: this.props.onPrepareStack } : {}),
     });
 
   onError = (stackData: IStack): void => {
@@ -193,7 +199,7 @@ export default class LoggerContainer extends Component<
     document.removeEventListener('mouseup', this._onMouseUp);
   }
 
-  override render(): JSX.Element {
+  override render(): ReactElement {
     const Bsod = isValidElement(this.props.bsod) ? this.props.bsod : BsodComponent;
 
     return (

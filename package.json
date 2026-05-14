@@ -1,17 +1,24 @@
 {
   "name": "logrock",
-  "version": "3.3.0",
+  "version": "4.0.0",
   "description": "This module can help you build error tracking & crash reporting system for your React application.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "start": "cross-env NODE_ENV=development node build",
-    "build": "cross-env NODE_ENV=production node build",
-    "typing": "cross-env NODE_ENV=production tsc -p . --noEmit",
-    "lint": "cross-env NODE_ENV=production eslint \"src/**\"",
+    "build": "node scripts.build --mode=production",
+    "format": "npm run format:prettier && npm run format:code && npm run format:styles",
+    "format:code": "eslint . --fix",
+    "format:prettier": "prettier --write \"src/**/*.{ts,tsx,json}\"",
+    "format:styles": "stylelint \"src/**/*.scss\" --fix",
+    "lint": "npm run lint:ts && npm run lint:code && npm run lint:styles",
+    "lint:code": "eslint .",
+    "lint:commit": "commitlint -e",
+    "lint:styles": "stylelint \"src/**/*.scss\"",
+    "lint:ts": "tsc --noEmit",
+    "pre-commit": "lint-staged",
     "test": "node tests.js",
     "test:watch": "node tests.js --watch",
-    "production": "npm run lint && npm run typing && npm test && npm run build && npm publish"
+    "production": "npm run lint && npm test && npm run build && npm publish"
   },
   "repository": {
     "type": "git",
@@ -36,24 +43,26 @@
   ],
   "private": false,
   "dependencies": {
-    "limited-array": "^2.0.3",
-    "valid-types": "^2.0.5"
+    "limited-array": "^2.0.3"
   },
   "devDependencies": {
-    "@rockpack/tsconfig": "^4.4.1",
-    "@rockpack/codestyle": "^4.4.1",
-    "@rockpack/compiler": "^4.4.1",
-    "@rockpack/tester": "^4.4.1",
-    "@types/cheerio": "^0.22.35",
-    "@types/enzyme": "^3.10.12",
-    "@wojtekmaj/enzyme-adapter-react-17": "^0.8.0",
-    "@types/jest": "^29.4.0",
-    "@types/react": "^17.0.0",
-    "@types/react-dom": "^17.0.19",
-    "enzyme": "^3.11.0"
+    "@rockpack/codestyle": "7.2.0",
+    "@rockpack/compiler": "7.2.0",
+    "@rockpack/tester": "7.2.0",
+    "@rockpack/tsconfig": "7.2.0",
+    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/react": "16.3.2",
+    "@types/node": "24.12.4",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "axios-mock-adapter": "2.1.0",
+    "husky": "9.1.7",
+    "lint-staged": "16.4.0",
+    "source-map": "0.8.0-beta.0",
+    "@types/jest": "^29.4.0"
   },
   "peerDependencies": {
-    "react": ">=17",
-    "react-dom": ">=17"
+    "react": ">=19",
+    "react-dom": ">=19"
   }
 }
