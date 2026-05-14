@@ -1,0 +1,145 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Bsod positive cases matches snapshot with critical as last action 1`] = `
+<body>
+  <div />
+  <div
+    style="background: rgb(0, 0, 170); color: rgb(179, 179, 179); font-family: courier; font-size: 14px; height: 100%; left: 0px; position: fixed; top: 0px; width: 100%; z-index: 10000;"
+  >
+    <div
+      style="height: 100%; position: relative; width: 100%;"
+    >
+      <button
+        style="background: rgb(238, 238, 238); border: 0px; cursor: pointer; font-size: 24px; height: 30px; line-height: 25px; position: absolute; right: 25px; text-align: center; top: 25px; width: 30px; z-index: 1000;"
+        type="button"
+      >
+        X
+      </button>
+      <h2
+        style="background: rgb(179, 179, 179); color: rgb(0, 0, 170); display: inline-block; font-family: courier; font-size: 18px; font-weight: bold; margin: 0px auto; padding: 0.25em 0.5em;"
+      >
+        Error: Something went wrong
+      </h2>
+      <div
+        style="font-size: 1rem; margin: 2em; text-align: left;"
+      >
+        <pre
+          style="background: none; border: 0px; color: rgb(179, 179, 179); font-style: normal; font-variant: normal; font-weight: normal; font-size: 10px; line-height: 13px; font-family: Lucida Console, Monaco, monospace; font: 10px / 13px Lucida Console, Monaco, monospace; margin: 0px 0px 10px;"
+        >
+          $
+          Error: Something went wrong
+  at foo (foo.js:1:1)
+        </pre>
+        <h4>
+          Actions:
+        </h4>
+        <ol
+          reversed=""
+          start="2"
+          style="font-size: 13px; list-style: list-item;"
+        >
+          <li>
+            <p>
+              <strong>
+                log
+                : 
+                before error
+              </strong>
+            </p>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</body>
+`;
+
+exports[`Bsod positive cases matches snapshot with empty actions 1`] = `
+<body>
+  <div />
+  <div
+    style="background: rgb(0, 0, 170); color: rgb(179, 179, 179); font-family: courier; font-size: 14px; height: 100%; left: 0px; position: fixed; top: 0px; width: 100%; z-index: 10000;"
+  >
+    <div
+      style="height: 100%; position: relative; width: 100%;"
+    >
+      <button
+        style="background: rgb(238, 238, 238); border: 0px; cursor: pointer; font-size: 24px; height: 30px; line-height: 25px; position: absolute; right: 25px; text-align: center; top: 25px; width: 30px; z-index: 1000;"
+        type="button"
+      >
+        X
+      </button>
+      <div
+        style="font-size: 1rem; margin: 2em; text-align: left;"
+      >
+        <h4>
+          Actions:
+        </h4>
+        <div>
+          Nothing actions
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+`;
+
+exports[`Bsod positive cases matches snapshot with non-critical actions 1`] = `
+<body>
+  <div />
+  <div
+    style="background: rgb(0, 0, 170); color: rgb(179, 179, 179); font-family: courier; font-size: 14px; height: 100%; left: 0px; position: fixed; top: 0px; width: 100%; z-index: 10000;"
+  >
+    <div
+      style="height: 100%; position: relative; width: 100%;"
+    >
+      <button
+        style="background: rgb(238, 238, 238); border: 0px; cursor: pointer; font-size: 24px; height: 30px; line-height: 25px; position: absolute; right: 25px; text-align: center; top: 25px; width: 30px; z-index: 1000;"
+        type="button"
+      >
+        X
+      </button>
+      <div
+        style="font-size: 1rem; margin: 2em; text-align: left;"
+      >
+        <h4>
+          Actions:
+        </h4>
+        <ol
+          reversed=""
+          start="3"
+          style="font-size: 13px; list-style: list-item;"
+        >
+          <li>
+            <p>
+              <strong>
+                warn
+                : 
+                slow response
+              </strong>
+            </p>
+          </li>
+          <li>
+            <p>
+              <strong>
+                info
+                : 
+                user loaded
+              </strong>
+            </p>
+          </li>
+          <li>
+            <p>
+              <strong>
+                log
+                : 
+                app started
+              </strong>
+            </p>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</body>
+`;

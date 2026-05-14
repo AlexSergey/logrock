@@ -1,160 +1,194 @@
 <div align="center">
     <a href="http://www.natrube.net/logrock/index.html">
-        <img src="http://www.natrube.net/logrock/LogRock.png" alt="This module can help you build error tracking & crash reporting system" />
+        <img src="http://www.natrube.net/logrock/LogRock.png" alt="logrock — error tracking & crash reporting for React" />
     </a>
 </div>
 <div align="center">
     <a href="http://www.natrube.net/logrock/index.html">Demo</a>
 </div>
 
-**logrock** is a React component and logging system that allows you to record all actions before a critical error occurs so that this information can be analyzed later.
-
+**logrock** is a React logging library that captures every user action before a critical error occurs and surfaces it as a structured stack — ready to display in a built-in BSOD overlay or send to your error tracking backend.
 
 ## Table of Contents
 
 - [Articles](#articles)
-- [Using](#using)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Logging](#logging)
+- [Reading the Stack](#reading-the-stack)
+- [Custom BSOD](#custom-bsod)
 - [Properties](#properties)
 - [Browser Compatibility](#browser-compatibility)
 - [License](#license)
 
 ## Articles
-- ENG: [Log Driven Development [Article]](https://www.rockpack.io/log-driven-development)
-- RUS: [LogRock: Тестирование через логирование [Article]](https://habr.com/ru/post/453652/)
 
-## Using
+- ENG: [Log Driven Development](https://www.rockpack.io/log-driven-development)
+- RUS: [LogRock: Тестирование через логирование](https://habr.com/ru/post/453652/)
 
-1. Installation:
+## Installation
 
 ```sh
-# NPM
-npm install logrock --save
+# npm
+npm install logrock
 
-# YARN
+# yarn
 yarn add logrock
 ```
 
-2. For the logger system to work correctly, we need to wrap our application in a *<LoggerContainer>* component
+## Quick Start
 
-```jsx
-import React, { useCallback, useContext } from 'react';
-import logger, { LoggerContainer, useLoggerApi } from 'logrock';
+Wrap your application in `<LoggerContainer>`. All logging and error capture happens inside this boundary.
 
-const App = () => {
-  const { getStackData, triggerError } = useLoggerApi();
-  ...
+```tsx
+import logger, { LoggerContainer } from 'logrock';
+
+function App() {
+  return <main>...</main>;
 }
 
-export default function () {
-  const loggerCtx = useContext(LoggerContext);
-  const showMessage = useCallback((level, message, important) => {
-    if (important) {
-      alert(message);
-    }
-  });
-
-  return <LoggerContainer
-    sessionID={window.sessionID}
-    limit={75} // Stack length limit. On overflow, the first element will be removed
-    getCurrentDate={() => {
-      // Critical error date
-      return dayjs()
-        .format('YYYY-MM-DD HH:mm:ss');
-    }}
-    stdout={showMessage} // Display some errors as a tooltip for users
-    onError={stackData => {
-      // Send a stack of actions before the error to the backend (or otherwise process it)
-      sendToServer(stack);
-    }}
-    onPrepareStack={stack => {
-      // Allows you to add additional information to the stack
-      stack.language = window.navigator.language;
-    }}>
-    <App/>
-  </LoggerContainer>
+export default function Root() {
+  return (
+    <LoggerContainer
+      sessionID={window.sessionID}
+      limit={75}
+      getCurrentDate={() => new Date().toISOString()}
+      stdout={(level, message, important) => {
+        if (important) alert(message);
+      }}
+      onError={(stackData) => {
+        // send the action stack to your backend or error tracker
+        sendToServer(stackData);
+      }}
+      onPrepareStack={(stack) => ({
+        ...stack,
+        // attach any extra context before the stack is sent
+        language: window.navigator.language,
+      })}
+    >
+      <App />
+    </LoggerContainer>
+  );
 }
 ```
 
-4. You need to add the logger to any of the methods you want to cover our logging system.
+## Logging
 
-The **logrock** module comes with a logger that is linked to *<LoggerContainer />*
+Import the `logger` singleton and call its methods anywhere in your application:
 
-Suppose we have a component
-
-```jsx
-import React, { useState } from 'react';
-
-export default function Toggle(props) {
-  const [toggleState, setToggleState] = useState('off');
-
-  function toggle() {
-    setToggleState(toggleState === 'off' ? 'on' : 'off');
-  }
-
-  return <div className={`switch ${toggleState}`} onClick={toggle}/>;
-}
-```
-
-To properly log it, we need to modify the toggle method
-
-```jsx
-import React, { useState } from 'react';
+```ts
 import logger from 'logrock';
 
-export default function Toggle(props) {
-  const [toggleState, setToggleState] = useState('off');
+logger.log('User opened settings panel');
+logger.info('Feature flag "dark-mode" is enabled');
+logger.warn('Response time exceeded 2 s');
+logger.debug('Computed layout: 1024×768');
+logger.error('Failed to parse server response');
+```
+
+Pass `true` as the second argument to forward the message to the `stdout` prop of `<LoggerContainer>`. Use this for messages that should be visible to the user (e.g. a toast or alert):
+
+```ts
+logger.error('Your session has expired. Please log in again.', true);
+```
+
+### Example — logging component state
+
+```tsx
+import { useState } from 'react';
+import logger from 'logrock';
+
+export default function Toggle() {
+  const [state, setState] = useState<'off' | 'on'>('off');
 
   function toggle() {
-    let state = toggleState === 'off' ? 'on' : 'off';
-    logger.info(`React.Toggle|Toggle component changed state ${state}`);
-    setToggleState(state);
+    const next = state === 'off' ? 'on' : 'off';
+    logger.info(`Toggle → ${next}`);
+    setState(next);
   }
 
-  return <div className={`switch ${toggleState}`} onClick={toggle}/>;
+  return <div className={`switch ${state}`} onClick={toggle} />;
 }
 ```
 
-We have added a logger in which the information is divided into 2 parts. React.Toggle shows us that this action happened at the level of React, the Toggle component, and then we have a verbal explanation of the action and the current state that came to this component.
-
-If a critical error occurs in the system, we will have a **Bsod** with a detailed description of the user's actions. It will also be possible to send this stack to the error analysis system or ElasticSearch in order to quickly catch errors that occurred among our users.
+When a critical error occurs the built-in BSOD overlay displays every recorded action so you can immediately see the sequence of events that led to the crash:
 
 <p align="right">
-  <img alt="Bsod" src="https://www.rockpack.io/readme_assets/rockpack_logger_bsod.jpg" />
+  <img alt="BSOD overlay" src="https://www.rockpack.io/readme_assets/rockpack_logger_bsod.jpg" />
 </p>
 
-*- When logging applications, you need to put logs in the most confusing and complex parts of the code, so you will understand what happened at this stage.*
+> Tip: place log calls around the most complex or error-prone parts of your code so the action trail is meaningful when you need it.
 
-*- We can also use the “componentDidCatch” method, which was introduced in React 16, in case an error occurs.*
+## Reading the Stack
+
+Use the `useLoggerApi` hook inside any component that is a descendant of `<LoggerContainer>` to access the current stack or trigger an error manually:
+
+```tsx
+import { useLoggerApi } from 'logrock';
+
+function DebugPanel() {
+  const { getStackData, triggerError } = useLoggerApi();
+
+  return (
+    <button onClick={() => triggerError(getStackData())}>
+      Simulate crash
+    </button>
+  );
+}
+```
+
+| Return value | Type | Description |
+| --- | --- | --- |
+| `getStackData` | `() => Stack` | Returns a snapshot of the current action stack with session metadata |
+| `triggerError` | `(stack: Stack) => void` | Invokes the `onError` callback manually with the provided stack |
+
+## Custom BSOD
+
+Replace the default overlay with your own component by passing it to the `bsod` prop. Your component receives the same `BsodProps` as the built-in one:
+
+```tsx
+import { BsodProps, LoggerContainer } from 'logrock';
+
+function MyErrorScreen({ count, stackData, onClose }: BsodProps) {
+  return (
+    <div className="error-screen">
+      <h1>Oops — something went wrong</h1>
+      <p>{count} actions recorded</p>
+      <button onClick={onClose}>Dismiss</button>
+    </div>
+  );
+}
+
+<LoggerContainer bsod={MyErrorScreen}>
+  <App />
+</LoggerContainer>
+```
 
 ## Properties
 
-- \<LoggerContainer /> properties:
+### `<LoggerContainer>`
 
-| Prop | Type | Description |
-| --- | --- | --- |
-| active | Boolean[true] | Enable / disable logging. It is recommended to disable logging during the testing phase. |
-| bsodActive | Boolean[true] | Enable / disable Bsod output. It is recommended to disable for Production  |
-| sessionID | Number | If you need to associate logging with Backend calls - a single session for Frontend and Backend will allow you to do this |
-| bsod | ReactElement[Component] | You can set your Bsod Component |
-| limit | Number[25] | Stack length limit. On overflow, the first element will be removed |
-| getCurrentDate | Function | Date format when an error occurred. Default - new Date().toLocaleString() |
-| onError | Function | window.onbeforeunload callback. In this callback, you can handle the stack or send it to the Backend |
-| onPrepareStack | Function | Allows you to add additional information to the stack before calling onError. For example, you can add the current localization of the application, the theme selected by the user, the name of the user who got the error, etc. |
-| stdout | Function | This method allows you to display the log method for the user (which was called with the second parameter "true"). For example, calling logger.error ('Ups ...', true) in the stdout method would output alert (message); |
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `active` | `boolean` | `true` | Enable or disable logging and event listeners. Disable during tests to keep them isolated. |
+| `bsodActive` | `boolean` | `true` | Show or hide the BSOD overlay when a critical error occurs. |
+| `bsod` | `FunctionComponent<BsodProps>` | built-in | Custom component to render instead of the default BSOD overlay. |
+| `sessionID` | `string \| number` | — | Associates the session with a backend session ID for correlated error reports. |
+| `limit` | `number` | `25` | Maximum number of actions kept in the stack. Oldest entries are dropped when the limit is exceeded. |
+| `getCurrentDate` | `() => string` | `new Date().toLocaleString()` | Returns the timestamp recorded in the session metadata. |
+| `onError` | `(stack: Stack) => void` | — | Called when a critical error is captured. Use this to send the stack to your backend or error tracker. |
+| `onPrepareStack` | `(stack: Stack) => Stack` | — | Transform the stack before it is passed to `onError`. Return the modified stack. |
+| `stdout` | `(level: string, message: string, important?: boolean) => void` | — | Called for every `logger.*` invocation. When `important` is `true` the message was flagged by the caller. |
 
-- logger methods:
+### `logger` methods
 
-The logger provided with **logrock** has methods:
-
-```js
-logger.log('log text here!');
-logger.info('Some extra log information');
-logger.warn('Warning! Warning!');
-logger.debug('I\'m a debug message!');
-logger.error('Ups...');
-```
-
-If we add *true* as the second parameter, the message passed to this log method will be passed to stdout *<LoggerContainer>*. This will display some useful messages for the user, for example, in tooltip or alert.
+| Method | Description |
+| --- | --- |
+| `logger.log(msg, important?)` | General-purpose log entry |
+| `logger.info(msg, important?)` | Informational entry |
+| `logger.warn(msg, important?)` | Warning entry |
+| `logger.debug(msg, important?)` | Debug entry |
+| `logger.error(msg, important?)` | Error entry |
 
 ## Browser Compatibility
 
@@ -163,27 +197,7 @@ If we add *true* as the second parameter, the message passed to this log method 
 | Chrome  | Yes    |
 | Firefox | Yes    |
 | Safari  | Yes    |
-| IE 11   | Yes    |
 
+# The MIT License
 
-## License
-
-The MIT License (MIT)
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+[LICENSE](https://github.com/prod-forge/backend/blob/main/LICENSE.md)
