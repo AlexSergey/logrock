@@ -1,18 +1,18 @@
-import { LoggerLevels, CriticalError } from './types';
+import { CriticalError, LoggerLevels } from "./types";
 
 export const mixUrl = (props: CriticalError): CriticalError => {
-  const href = globalThis && globalThis.location && globalThis.location.href ? globalThis.location.href : '';
+  const href = globalThis && globalThis.location && globalThis.location.href ? globalThis.location.href : "";
 
-  return { ...(href !== '' ? { url: href } : {}), ...props };
+  return { ...(href !== "" ? { url: href } : {}), ...props };
 };
 
 export const serializeError = (stack: Error, lineNumber: number): CriticalError => ({
   line: lineNumber,
-  message: stack.message ?? '',
-  stack: stack.stack ? stack.stack.split('\n') : [],
+  message: stack.message ?? "",
+  stack: stack.stack ? stack.stack.split("\n") : [],
 });
 
-const CRITICAL = 'critical';
+const CRITICAL = "critical";
 
 export const isCritical = (type: string): boolean => CRITICAL === type;
 

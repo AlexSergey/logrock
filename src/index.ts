@@ -1,7 +1,7 @@
-import { logger } from './logger';
-import LoggerContainer, { useLoggerApi } from './logger-container';
-import type { ILogger, IStack } from './types';
+import type { LoggerInstance, Stack } from "./types";
 
-// eslint-disable-next-line import/no-default-export
+import { logger } from "./logger";
+import LoggerContainer, { useLoggerApi } from "./logger-container";
+
 export default logger;
-export { LoggerContainer, useLoggerApi, ILogger, IStack };
+export { LoggerContainer, LoggerInstance, Stack, useLoggerApi };

@@ -1,33 +1,33 @@
-import { IAction, IStack } from './types';
-import { clone, getCurrentDate } from './utils';
+import { LogEntry, Stack } from "./types";
+import { clone, getCurrentDate } from "./utils";
 
-const makeStack = (): IStack => ({
+const makeStack = (): Stack => ({
   actions: [],
-  env: { lang: 'en', href: 'http://example.com' },
-  keyboardPressed: 'KeyA',
+  env: { href: "http://example.com", lang: "en" },
+  keyboardPressed: "KeyA",
   mousePressed: 1,
-  session: { start: '2024-01-01', end: '2024-01-02' },
-  sessionId: 'test-session',
+  session: { end: "2024-01-02", start: "2024-01-01" },
+  sessionId: "test-session",
 });
 
-describe('getCurrentDate', () => {
-  describe('positive cases', () => {
-    it('returns a non-empty string', () => {
+describe("getCurrentDate", () => {
+  describe("positive cases", () => {
+    it("returns a non-empty string", () => {
       const result = getCurrentDate();
-      expect(typeof result).toBe('string');
+      expect(typeof result).toBe("string");
       expect(result.length).toBeGreaterThan(0);
     });
   });
 });
 
-describe('clone', () => {
-  describe('negative cases', () => {
-    it('returns a different reference from the original', () => {
+describe("clone", () => {
+  describe("negative cases", () => {
+    it("returns a different reference from the original", () => {
       const stack = makeStack();
       expect(clone(stack)).not.toBe(stack);
     });
 
-    it('nested objects are separate references', () => {
+    it("nested objects are separate references", () => {
       const stack = makeStack();
       const cloned = clone(stack);
       expect(cloned.session).not.toBe(stack.session);
@@ -35,22 +35,22 @@ describe('clone', () => {
       expect(cloned.actions).not.toBe(stack.actions);
     });
 
-    it('strips function properties via JSON serialization', () => {
-      const stack: IStack = { ...makeStack(), onPrepareStack: (s) => s };
+    it("strips function properties via JSON serialization", () => {
+      const stack: Stack = { ...makeStack(), onPrepareStack: (s) => s };
       const cloned = clone(stack);
       expect(cloned.onPrepareStack).toBeUndefined();
     });
 
-    it('mutations to clone do not affect the original', () => {
+    it("mutations to clone do not affect the original", () => {
       const stack = makeStack();
       const cloned = clone(stack);
-      cloned.session.start = 'mutated';
-      expect(stack.session.start).toBe('2024-01-01');
+      cloned.session.start = "mutated";
+      expect(stack.session.start).toBe("2024-01-01");
     });
   });
 
-  describe('positive cases', () => {
-    it('deep clones primitive fields', () => {
+  describe("positive cases", () => {
+    it("deep clones primitive fields", () => {
       const stack = makeStack();
       const cloned = clone(stack);
       expect(cloned.sessionId).toBe(stack.sessionId);
@@ -58,18 +58,18 @@ describe('clone', () => {
       expect(cloned.keyboardPressed).toBe(stack.keyboardPressed);
     });
 
-    it('deep clones session', () => {
+    it("deep clones session", () => {
       const stack = makeStack();
       expect(clone(stack).session).toEqual(stack.session);
     });
 
-    it('deep clones env', () => {
+    it("deep clones env", () => {
       const stack = makeStack();
       expect(clone(stack).env).toEqual(stack.env);
     });
 
-    it('deep clones actions including nested objects', () => {
-      const stack: IStack = { ...makeStack(), actions: [{ log: 'test' } as unknown as IAction] };
+    it("deep clones actions including nested objects", () => {
+      const stack: Stack = { ...makeStack(), actions: [{ log: "test" } as unknown as LogEntry] };
       const cloned = clone(stack);
       expect(cloned.actions).toEqual(stack.actions);
       expect(cloned.actions[0]).not.toBe(stack.actions[0]);
