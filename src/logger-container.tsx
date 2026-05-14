@@ -9,13 +9,13 @@ import {
   useMemo,
   useRef,
   useState,
-} from "react";
+} from 'react';
 
-import BsodComponent, { BsodProps } from "./bsod";
-import { logger } from "./logger";
-import { getStackData, onCriticalError } from "./stack";
-import { LogEntry, LoggerInstance, Stack } from "./types";
-import { getCurrentDate } from "./utils";
+import BsodComponent, { BsodProps } from './components/bsod';
+import { getStackData, onCriticalError } from './helpers/stack';
+import { getCurrentDate } from './helpers/utils';
+import { logger } from './logger';
+import { LogEntry, LoggerInstance, Stack } from './types';
 
 interface LoggerContextValue {
   getStackData: () => Stack;
@@ -24,7 +24,7 @@ interface LoggerContextValue {
 
 export const LoggerContext = createContext<LoggerContextValue | null>(null);
 
-const isBackend = (): boolean => typeof window === "undefined";
+const isBackend = (): boolean => typeof window === 'undefined';
 
 interface LoggerApiReturn {
   getStackData: () => Stack;
@@ -83,25 +83,25 @@ export default function LoggerContainer({
     env: {},
     keyboardPressed: null,
     mousePressed: null,
-    ...(typeof onPrepareStack === "function" ? { onPrepareStack } : {}),
+    ...(typeof onPrepareStack === 'function' ? { onPrepareStack } : {}),
     session: {
-      start: typeof getCurrentDateFn === "function" ? getCurrentDateFn() : getCurrentDate(),
+      start: typeof getCurrentDateFn === 'function' ? getCurrentDateFn() : getCurrentDate(),
     },
-    sessionId: typeof sessionID === "string" || typeof sessionID === "number" ? sessionID : undefined,
+    sessionId: typeof sessionID === 'string' || typeof sessionID === 'number' ? sessionID : undefined,
   });
 
   useEffect(() => {
     logger.setUp({ active });
     logger.getStackCollection().setLimit(limit);
-    if (typeof stdout === "function") {
+    if (typeof stdout === 'function') {
       logger.setUp({ stdout });
     }
   }, [active, limit, stdout]);
 
   const buildProps = useCallback(
     () => ({
-      ...(typeof getCurrentDateFn === "function" ? { getCurrentDate: getCurrentDateFn } : {}),
-      ...(typeof onPrepareStack === "function" ? { onPrepareStack } : {}),
+      ...(typeof getCurrentDateFn === 'function' ? { getCurrentDate: getCurrentDateFn } : {}),
+      ...(typeof onPrepareStack === 'function' ? { onPrepareStack } : {}),
     }),
     [getCurrentDateFn, onPrepareStack],
   );
@@ -113,7 +113,7 @@ export default function LoggerContainer({
 
   const handleError = useCallback(
     (stackData: Stack): void => {
-      if (typeof onErrorCallback === "function") {
+      if (typeof onErrorCallback === 'function') {
         onErrorCallback(stackData);
       }
     },
@@ -147,10 +147,10 @@ export default function LoggerContainer({
       e.preventDefault();
       if (hasCriticalError.current) return;
       hasCriticalError.current = true;
-      document.removeEventListener("mousedown", onMouseDown);
-      document.removeEventListener("mouseup", onMouseUp);
-      document.removeEventListener("keydown", onKeyDown);
-      document.removeEventListener("keyup", onKeyUp);
+      document.removeEventListener('mousedown', onMouseDown);
+      document.removeEventListener('mouseup', onMouseUp);
+      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('keyup', onKeyUp);
       const stackData = onCriticalError(
         stack.current as Stack,
         logger.getStackCollection(),
@@ -162,18 +162,18 @@ export default function LoggerContainer({
       setBsodVisible(true);
     };
 
-    document.addEventListener("mousedown", onMouseDown);
-    document.addEventListener("mouseup", onMouseUp);
-    document.addEventListener("keydown", onKeyDown);
-    document.addEventListener("keyup", onKeyUp);
-    window.addEventListener("error", onError);
+    document.addEventListener('mousedown', onMouseDown);
+    document.addEventListener('mouseup', onMouseUp);
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('keyup', onKeyUp);
+    window.addEventListener('error', onError);
 
     return (): void => {
-      window.removeEventListener("error", onError);
-      document.removeEventListener("keydown", onKeyDown);
-      document.removeEventListener("keyup", onKeyUp);
-      document.removeEventListener("mousedown", onMouseDown);
-      document.removeEventListener("mouseup", onMouseUp);
+      window.removeEventListener('error', onError);
+      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('keyup', onKeyUp);
+      document.removeEventListener('mousedown', onMouseDown);
+      document.removeEventListener('mouseup', onMouseUp);
     };
   }, [active, buildProps, handleError]);
 
@@ -182,7 +182,7 @@ export default function LoggerContainer({
     [getStackDataFn, handleError],
   );
 
-  const Bsod = typeof BsodProp === "function" ? BsodProp : BsodComponent;
+  const Bsod = typeof BsodProp === 'function' ? BsodProp : BsodComponent;
 
   return (
     <LoggerContext.Provider value={contextValue}>

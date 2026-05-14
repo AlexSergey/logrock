@@ -1,12 +1,12 @@
-import LimitedArray from "limited-array";
+import LimitedArray from '../helpers/limited-array';
 
 export enum LoggerLevels {
-  critical = "critical",
-  debug = "debug",
-  error = "error",
-  info = "info",
-  log = "log",
-  warn = "warn",
+  critical = 'critical',
+  debug = 'debug',
+  error = 'error',
+  info = 'info',
+  log = 'log',
+  warn = 'warn',
 }
 
 export interface CriticalError {
@@ -16,14 +16,13 @@ export interface CriticalError {
   url?: string;
 }
 
-export interface LogEntry {
-  [LoggerLevels.critical]: CriticalError;
-  [LoggerLevels.debug]: string;
-  [LoggerLevels.error]: string;
-  [LoggerLevels.info]: string;
-  [LoggerLevels.log]: string;
-  [LoggerLevels.warn]: string;
-}
+export type LogEntry =
+  | { [LoggerLevels.critical]: CriticalError }
+  | { [LoggerLevels.debug]: string }
+  | { [LoggerLevels.error]: string }
+  | { [LoggerLevels.info]: string }
+  | { [LoggerLevels.log]: string }
+  | { [LoggerLevels.warn]: string };
 
 export interface LoggerInstance {
   debug(message: string, important?: boolean): void;

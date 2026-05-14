@@ -28,10 +28,9 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "node scripts.build --mode=production",
-    "format": "npm run format:prettier && npm run format:code && npm run format:styles",
+    "format": "npm run format:prettier && npm run format:code",
     "format:code": "eslint . --fix",
     "format:prettier": "prettier --write \"src/**/*.{ts,tsx,json}\"",
-    "format:styles": "stylelint \"src/**/*.scss\" --fix",
     "lint": "npm run lint:ts && npm run lint:code",
     "lint:code": "eslint .",
     "lint:commit": "commitlint -e",
@@ -40,9 +39,6 @@
     "production": "npm run lint && npm test && npm run build && npm publish",
     "test": "node scripts.tests.js",
     "test:watch": "node scripts.tests.js --watch"
-  },
-  "dependencies": {
-    "limited-array": "^2.0.3"
   },
   "devDependencies": {
     "@rockpack/codestyle": "7.2.0",

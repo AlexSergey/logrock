@@ -1,10 +1,10 @@
-const { makeConfig } = require("@rockpack/codestyle");
+const { makeConfig } = require('@rockpack/codestyle');
 
 const config = makeConfig();
 
 config.push({
   rules: {
-    "package-json/require-type": "off",
+    'package-json/require-type': 'off',
   },
 });
 

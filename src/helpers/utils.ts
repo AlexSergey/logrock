@@ -1,4 +1,4 @@
-import { Stack } from "./types";
+import { Stack } from '../types';
 
 export const getCurrentDate = (): string => new Date().toLocaleString();
 

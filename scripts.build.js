@@ -1,11 +1,19 @@
-const { frontendCompiler } = require("@rockpack/compiler");
-const path = require("node:path");
+const { libraryCompiler } = require('@rockpack/compiler');
 
-frontendCompiler({
-  html: {
-    favicon: path.resolve(__dirname, "./favicon.ico"),
-    template: path.resolve(__dirname, "./index.ejs"),
+libraryCompiler(
+  {
+    cjs: {
+      dist: './lib/cjs',
+      src: './src',
+    },
+    esm: {
+      dist: './lib/esm',
+      src: './src',
+    },
+    name: 'RockLogger',
   },
-  styles: "styles.css",
-  vendor: ["react", "react-dom"],
-});
+  null,
+  (config) => {
+    config.externals = ['react', 'react-dom'];
+  },
+);
