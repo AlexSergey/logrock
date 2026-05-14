@@ -94,3 +94,4 @@ test-reports
 .env
 
 # Custom rules
+lib/
