@@ -16,8 +16,8 @@
     "lint:styles": "stylelint \"src/**/*.scss\"",
     "lint:ts": "tsc --noEmit",
     "pre-commit": "lint-staged",
-    "test": "node tests.js",
-    "test:watch": "node tests.js --watch",
+    "test": "node scripts.tests.js",
+    "test:watch": "node scripts.tests.js --watch",
     "production": "npm run lint && npm test && npm run build && npm publish"
   },
   "repository": {
