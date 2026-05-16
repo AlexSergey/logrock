@@ -17,14 +17,14 @@ export interface LogEntry {
 }
 
 export interface LoggerInstance {
-  debug(message: Message, ctx?: string, important?: boolean): void;
-  error(message: Message, ctx?: string, important?: boolean): void;
-  getCounter(): number;
-  getStackCollection(): LimitedArray<LogEntry>;
-  info(message: Message, ctx?: string, important?: boolean): void;
-  log(message: Message, ctx?: string, important?: boolean): void;
-  setUp(props: LoggerSetupOptions): void;
-  warn(message: Message, ctx?: string, important?: boolean): void;
+  debug: (message: Message, ctx?: string, important?: boolean) => void;
+  error: (message: Message, ctx?: string, important?: boolean) => void;
+  getCounter: () => number;
+  getStackCollection: () => LimitedArray<LogEntry>;
+  info: (message: Message, ctx?: string, important?: boolean) => void;
+  log: (message: Message, ctx?: string, important?: boolean) => void;
+  setUp: (props: LoggerSetupOptions) => void;
+  warn: (message: Message, ctx?: string, important?: boolean) => void;
 }
 
 export interface LoggerSetupOptions {
