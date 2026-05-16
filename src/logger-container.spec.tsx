@@ -4,11 +4,11 @@ import { PropsWithChildren, ReactElement } from 'react';
 import { BsodProps } from './components/bsod';
 import { logger } from './logger';
 import LoggerContainer, { useLoggerApi } from './logger-container';
-import { Stack } from './types';
+import { LoggerLevels, Stack } from './types';
 
 interface WrapperProps {
   onError?: (s: Stack) => void;
-  stdout?: (level: string, message: string, important?: boolean) => void;
+  stdout?: (level: string, message: string, ctx: string, important: boolean) => void;
 }
 
 const createWrapper =
@@ -104,14 +104,29 @@ describe('LoggerContainer', () => {
           </LoggerContainer>,
         );
         logger[method](`test ${method} message`);
-        expect(stdout).toHaveBeenCalledWith(method, `test ${method} message`, false);
+        expect(stdout).toHaveBeenCalledWith(method, `test ${method} message`, '', false);
       });
+    });
+
+    it('calls stdout with ctx when logger method receives a ctx argument', () => {
+      const stdout = jest.fn();
+      render(
+        <LoggerContainer stdout={stdout}>
+          <div />
+        </LoggerContainer>,
+      );
+      logger.log('msg', 'MyComponent');
+      expect(stdout).toHaveBeenCalledWith('log', 'msg', 'MyComponent', false);
     });
 
     it('getStackData returns actions that were logged', () => {
       const { result } = renderHook(() => useLoggerApi(), { wrapper: createWrapper() });
       logger.log('unique-getstack-msg');
-      expect(result.current.getStackData().actions).toContainEqual({ log: 'unique-getstack-msg' });
+      expect(result.current.getStackData().actions).toContainEqual({
+        ctx: '',
+        level: 'log',
+        message: 'unique-getstack-msg',
+      });
     });
 
     it('triggerError invokes onError with an Stack', () => {
@@ -202,7 +217,7 @@ describe('LoggerContainer', () => {
       fireWindowError('crash message', 42);
       expect(onError).toHaveBeenCalledTimes(1);
       const [[stackData]] = onError.mock.calls as [[Stack]];
-      expect(stackData.actions.some((a) => 'critical' in a)).toBe(true);
+      expect(stackData.actions.some((a) => a.level === LoggerLevels.critical)).toBe(true);
     });
 
     it('uses the custom bsod component when the bsod prop is provided', () => {

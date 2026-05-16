@@ -102,16 +102,18 @@ const LoggerContainerProps = () => {
                         Function
                     </td>
                     <td>
-                        <p>You can output log message to the console, or if you set second parameter "true" you can show log to the user use any notifier.</p>
+                        <p>Called on every logger invocation. <code>ctx</code> is the component or module name passed as the second argument to the logger method. Set <code>important</code> to <code>true</code> to surface the message to the user via a toast or alert.</p>
+                        <p>Signature: <code>(level, message, ctx, important)</code></p>
                         <p>For example:</p>
-                        <Code height={'18px'} value={`logger.log('Show it for user!', true); `} />
-                        <p>stdout method:</p>
-                        <Code height={'165px'} value={`<LoggerContainer
-    stdout={(level, message, important) => {
-        console[level](message);
+                        <Code height={'auto'} value={`logger.log('Settings panel opened', 'SettingsPanel', true);`} />
+                        <p>stdout handler:</p>
+                        <Code height={'auto'} value={`<LoggerContainer
+    stdout={(level, message, ctx, important) => {
+        const label = ctx ? \`[\${ctx}] \${message}\` : message;
+        console[level](label);
 
         if (important) {
-            alert(message);
+            alert(label);
         }
     }}>
         <App />
@@ -129,13 +131,24 @@ const LoggerMetods = () => {
         <p style={{fontSize: '17px'}}><strong>{"logger"}</strong> methods:</p>
         <p>This is a simple logger. That related to LoggerContainer and it builds your stack.</p>
         <p>Each of logger calls and adds the new action to our stack.</p>
-        <Code height={'85px'} value={`logger.log("log text here!");
+        <Code height={'auto'} value={`logger.log("log text here!");
 logger.info("Some extra log information");
 logger.warn("Warning! Warning!");
 logger.debug("I'm a debug message!");
 logger.error("Ups...");`} />
-        <p>If we add second parameter to logger we can call stdout function to show this action to our users.</p>
-        <p>It will be useful when we need to say our user that there are some errors in our application or successful actions.</p>
+        <p>Pass a component or module name as the second argument (<code>ctx</code>) to tag every entry with its source:</p>
+        <Code height={'auto'} value={`logger.log("User opened settings", "SettingsPanel");
+logger.info("Feature flag enabled", "FeatureFlags");
+logger.warn("Slow response detected", "ApiClient");
+logger.error("Request failed", "ApiClient");`} />
+        <p>Pass <code>true</code> as the third argument to forward the message to the <code>stdout</code> callback. Use this to surface important events to the user via a toast or alert.</p>
+        <Code height={'auto'} value={`logger.error("Session expired. Please log in again.", "Auth", true);`} />
+        <p>Each entry in the stack is a flat object:</p>
+        <Code height={'auto'} value={`// { level: LoggerLevels; ctx: string; message: string | CriticalError }
+
+{ level: "log",      ctx: "SettingsPanel", message: "User opened settings" }
+{ level: "error",    ctx: "ApiClient",     message: "Request failed" }
+{ level: "critical", ctx: "",              message: { line: 42, message: "...", stack: [...] } }`} />
     </>;
 };
 

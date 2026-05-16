@@ -16,29 +16,29 @@ export interface CriticalError {
   url?: string;
 }
 
-export type LogEntry =
-  | { [LoggerLevels.critical]: CriticalError }
-  | { [LoggerLevels.debug]: string }
-  | { [LoggerLevels.error]: string }
-  | { [LoggerLevels.info]: string }
-  | { [LoggerLevels.log]: string }
-  | { [LoggerLevels.warn]: string };
+export interface LogEntry {
+  ctx: string;
+  level: LoggerLevels;
+  message: CriticalError | Message;
+}
 
 export interface LoggerInstance {
-  debug(message: string, important?: boolean): void;
-  error(message: string, important?: boolean): void;
+  debug(message: string, ctx?: string, important?: boolean): void;
+  error(message: string, ctx?: string, important?: boolean): void;
   getCounter(): number;
   getStackCollection(): LimitedArray<LogEntry>;
-  info(message: string, important?: boolean): void;
-  log(message: string, important?: boolean): void;
+  info(message: string, ctx?: string, important?: boolean): void;
+  log(message: string, ctx?: string, important?: boolean): void;
   setUp(props: LoggerSetupOptions): void;
-  warn(message: string, important?: boolean): void;
+  warn(message: string, ctx?: string, important?: boolean): void;
 }
 
 export interface LoggerSetupOptions {
   active?: boolean;
-  stdout?: (level: string, message: string, important?: boolean) => void;
+  stdout?: Stdout;
 }
+
+export type Message = Record<string, string> | string;
 
 export interface Stack {
   actions: LogEntry[];
@@ -56,15 +56,9 @@ export interface Stack {
   sessionId: number | string | undefined;
 }
 
-export type StackData =
-  | { [LoggerLevels.critical]: CriticalError }
-  | { [LoggerLevels.debug]: string }
-  | { [LoggerLevels.error]: string }
-  | { [LoggerLevels.info]: string }
-  | { [LoggerLevels.log]: string }
-  | { [LoggerLevels.warn]: string };
-
 export interface StackUtilProps {
   getCurrentDate?: () => string;
   onPrepareStack?: (stack: Stack) => Stack;
 }
+
+export type Stdout = (level: string, message: string, ctx: string, important: boolean) => void;

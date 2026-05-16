@@ -44,7 +44,7 @@ function LoggerDemo() {
                 <p style={{ fontSize: '16px' }}>
                   <strong>logger.log</strong>
                 </p>
-                <button className="btn btn-primary mb-2" onClick={() => logger.log('module|test log', true)}>
+                <button className="btn btn-primary mb-2" onClick={() => logger.log('test log', 'Examples', true)}>
                   log
                 </button>
               </td>
@@ -52,7 +52,7 @@ function LoggerDemo() {
                 <p style={{ fontSize: '16px' }}>
                   <strong>logger.info</strong>
                 </p>
-                <button className="btn btn-info mb-2" onClick={() => logger.info('module|test info', true)}>
+                <button className="btn btn-info mb-2" onClick={() => logger.info('test info', 'Examples', true)}>
                   info
                 </button>
               </td>
@@ -62,7 +62,7 @@ function LoggerDemo() {
                 <p style={{ fontSize: '16px' }}>
                   <strong>logger.debug</strong>
                 </p>
-                <button className="btn btn-secondary mb-2" onClick={() => logger.debug('module|test debug', true)}>
+                <button className="btn btn-secondary mb-2" onClick={() => logger.debug('test debug', 'Examples', true)}>
                   debug
                 </button>
               </td>
@@ -70,7 +70,7 @@ function LoggerDemo() {
                 <p style={{ fontSize: '16px' }}>
                   <strong>logger.warn</strong>
                 </p>
-                <button className="btn btn-warning mb-2" onClick={() => logger.warn('module|test warn', true)}>
+                <button className="btn btn-warning mb-2" onClick={() => logger.warn('test warn', 'Examples', true)}>
                   warn
                 </button>
               </td>
@@ -80,7 +80,7 @@ function LoggerDemo() {
                 <p style={{ fontSize: '16px' }}>
                   <strong>logger.error</strong>
                 </p>
-                <button className="btn btn-danger mb-2" onClick={() => logger.error('module|test error', true)}>
+                <button className="btn btn-danger mb-2" onClick={() => logger.error('test error', 'Examples', true)}>
                   error
                 </button>
               </td>
@@ -107,12 +107,12 @@ function LoggerDemo() {
 }
 
 export default function Examples() {
-  const showMessage = useCallback((level: string, message: string, important?: boolean) => {
+  const showMessage = useCallback((level: string, message: string, ctx: string, important: boolean) => {
     const lvl = level as LogLevel;
-    console[lvl](message);
+    console[lvl](ctx ? `[${ctx}] ${message}` : message);
 
     if (important) {
-      toastByLevel[lvl]?.(message);
+      toastByLevel[lvl]?.(ctx ? `[${ctx}] ${message}` : message);
     }
   }, []);
 

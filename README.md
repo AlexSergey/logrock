@@ -53,8 +53,8 @@ export default function Root() {
       sessionID={window.sessionID}
       limit={75}
       getCurrentDate={() => new Date().toISOString()}
-      stdout={(level, message, important) => {
-        if (important) alert(message);
+      stdout={(level, message, ctx, important) => {
+        if (important) alert(`[${ctx}] ${message}`);
       }}
       onError={(stackData) => {
         // send the action stack to your backend or error tracker
@@ -86,10 +86,25 @@ logger.debug('Computed layout: 1024×768');
 logger.error('Failed to parse server response');
 ```
 
-Pass `true` as the second argument to forward the message to the `stdout` prop of `<LoggerContainer>`. Use this for messages that should be visible to the user (e.g. a toast or alert):
+### Context (`ctx`)
+
+Pass a component or module name as the second argument to tag the log entry with its origin. The `ctx` string is stored in the stack entry and forwarded to the `stdout` callback so you can filter or prefix log output by source:
 
 ```ts
-logger.error('Your session has expired. Please log in again.', true);
+logger.log('User opened settings panel', 'SettingsPanel');
+logger.info('Feature flag enabled', 'FeatureFlags');
+logger.warn('Response time exceeded 2 s', 'ApiClient');
+logger.error('Failed to parse response', 'ApiClient');
+```
+
+Each log entry in the stack will be `{ level: 'log', ctx: 'SettingsPanel', message: 'User opened settings panel' }`.
+
+### Important flag
+
+Pass `true` as the third argument to forward the message to the `stdout` prop of `<LoggerContainer>`. Use this for messages that should be visible to the user (e.g. a toast or alert):
+
+```ts
+logger.error('Your session has expired. Please log in again.', 'Auth', true);
 ```
 
 ### Example — logging component state
@@ -103,7 +118,7 @@ export default function Toggle() {
 
   function toggle() {
     const next = state === 'off' ? 'on' : 'off';
-    logger.info(`Toggle → ${next}`);
+    logger.info(`Toggle changed state to ${next}`, 'Toggle');
     setState(next);
   }
 
@@ -111,7 +126,7 @@ export default function Toggle() {
 }
 ```
 
-When a critical error occurs the built-in BSOD overlay displays every recorded action so you can immediately see the sequence of events that led to the crash:
+When a critical error occurs the built-in BSOD overlay displays every recorded action — including each entry's `ctx` tag — so you can immediately see the sequence of events that led to the crash:
 
 <p align="right">
   <img alt="BSOD overlay" src="https://www.rockpack.io/readme_assets/rockpack_logger_bsod.jpg" />
@@ -178,17 +193,39 @@ function MyErrorScreen({ count, stackData, onClose }: BsodProps) {
 | `getCurrentDate` | `() => string` | `new Date().toLocaleString()` | Returns the timestamp recorded in the session metadata. |
 | `onError` | `(stack: Stack) => void` | — | Called when a critical error is captured. Use this to send the stack to your backend or error tracker. |
 | `onPrepareStack` | `(stack: Stack) => Stack` | — | Transform the stack before it is passed to `onError`. Return the modified stack. |
-| `stdout` | `(level: string, message: string, important?: boolean) => void` | — | Called for every `logger.*` invocation. When `important` is `true` the message was flagged by the caller. |
+| `stdout` | `(level: string, message: string, ctx: string, important: boolean) => void` | — | Called for every `logger.*` invocation. `ctx` is the component/module name passed to the logger method. When `important` is `true` the message was flagged by the caller. |
 
 ### `logger` methods
 
 | Method | Description |
 | --- | --- |
-| `logger.log(msg, important?)` | General-purpose log entry |
-| `logger.info(msg, important?)` | Informational entry |
-| `logger.warn(msg, important?)` | Warning entry |
-| `logger.debug(msg, important?)` | Debug entry |
-| `logger.error(msg, important?)` | Error entry |
+| `logger.log(msg, ctx?, important?)` | General-purpose log entry |
+| `logger.info(msg, ctx?, important?)` | Informational entry |
+| `logger.warn(msg, ctx?, important?)` | Warning entry |
+| `logger.debug(msg, ctx?, important?)` | Debug entry |
+| `logger.error(msg, ctx?, important?)` | Error entry |
+
+`ctx` is an optional string that identifies the source component or module. It is stored in the stack entry and forwarded to `stdout`. When omitted it defaults to an empty string.
+
+### `LogEntry` shape
+
+Every entry in `stack.actions` is a flat object:
+
+```ts
+type LogEntry = {
+  level: LoggerLevels;       // 'log' | 'info' | 'warn' | 'debug' | 'error' | 'critical'
+  ctx: string;               // component/module name, empty string when omitted
+  message: string | CriticalError; // log text, or error detail for critical entries
+};
+```
+
+Examples:
+
+```ts
+{ level: 'log',      ctx: 'SettingsPanel', message: 'User opened settings' }
+{ level: 'error',    ctx: 'ApiClient',     message: 'Request failed' }
+{ level: 'critical', ctx: '',              message: { line: 42, message: '...', stack: [...] } }
+```
 
 ## Browser Compatibility
 

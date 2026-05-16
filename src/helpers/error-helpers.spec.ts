@@ -99,20 +99,27 @@ describe('mixUrl', () => {
 
 describe('createCritical', () => {
   describe('positive cases', () => {
-    it('returns an object with a "critical" key', () => {
-      expect(createCritical(new Error('boom'), 1)).toHaveProperty('critical');
+    it('returns an entry with level "critical"', () => {
+      expect(createCritical(new Error('boom'), 1).level).toBe('critical');
     });
 
-    it('critical entry contains the correct line number', () => {
-      expect(createCritical(new Error('crash'), 99).critical.line).toBe(99);
+    it('returns an entry with empty ctx', () => {
+      expect(createCritical(new Error('crash'), 99).ctx).toBe('');
     });
 
-    it('critical entry contains the correct error message', () => {
-      expect(createCritical(new Error('something failed'), 1).critical.message).toBe('something failed');
+    it('entry contains the correct line number', () => {
+      const entry = createCritical(new Error('crash'), 99);
+      expect((entry.message as { line: number }).line).toBe(99);
     });
 
-    it('critical entry contains a stack array', () => {
-      expect(Array.isArray(createCritical(new Error('test'), 1).critical.stack)).toBe(true);
+    it('entry contains the correct error message', () => {
+      const entry = createCritical(new Error('something failed'), 1);
+      expect((entry.message as { message: string }).message).toBe('something failed');
+    });
+
+    it('entry contains a stack array', () => {
+      const entry = createCritical(new Error('test'), 1);
+      expect(Array.isArray((entry.message as { stack: unknown[] }).stack)).toBe(true);
     });
   });
 });

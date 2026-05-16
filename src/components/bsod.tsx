@@ -2,7 +2,7 @@ import { ReactElement } from 'react';
 import { createPortal } from 'react-dom';
 
 import { isCritical } from '../helpers/error-helpers';
-import { LoggerLevels, Stack } from '../types';
+import { CriticalError, LoggerLevels, Stack } from '../types';
 
 export interface BsodProps {
   count: number;
@@ -13,7 +13,7 @@ export interface BsodProps {
 const Bsod = (props: BsodProps): ReactElement => {
   const { actions } = props.stackData;
   const lastAction = actions[actions.length - 1];
-  const cError = lastAction && LoggerLevels.critical in lastAction ? lastAction[LoggerLevels.critical] : undefined;
+  const cError = lastAction?.level === LoggerLevels.critical ? (lastAction.message as CriticalError) : undefined;
 
   return createPortal(
     <div
@@ -106,54 +106,23 @@ const Bsod = (props: BsodProps): ReactElement => {
                 listStyle: 'list-item',
               }}
             >
-              {((): ReactElement[] => {
-                const listOfActions = actions
-                  .filter((action) => {
-                    if (action === null || typeof action !== 'object' || Array.isArray(action)) {
-                      return false;
-                    }
+              {[...actions]
+                .reverse()
+                .filter((action) => !isCritical(action.level))
+                .map((action, index): ReactElement => {
+                  const msg = typeof action.message === 'string' ? action.message : JSON.stringify(action.message);
 
-                    const type = Object.keys(action)[0];
-
-                    if (!type) {
-                      return false;
-                    }
-
-                    return !isCritical(type);
-                  })
-                  .map((action) => {
-                    if (action === null || typeof action !== 'object' || Array.isArray(action)) {
-                      return null;
-                    }
-
-                    const type = Object.keys(action)[0];
-
-                    if (!type) {
-                      return null;
-                    }
-
-                    const actionMessage = action[type as keyof typeof action] as string;
-
-                    return {
-                      actionMessage,
-                      type,
-                    };
-                  })
-                  .filter((x): x is { actionMessage: string; type: string } => x !== null)
-                  .reverse();
-
-                return listOfActions.map(
-                  ({ actionMessage, type }, index): ReactElement => (
+                  return (
                     <li key={index}>
                       <p>
                         <strong>
-                          {type}: {actionMessage}
+                          {action.ctx ? `[${action.ctx}] ` : ''}
+                          {action.level}: {msg}
                         </strong>
                       </p>
                     </li>
-                  ),
-                );
-              })()}
+                  );
+                })}
             </ol>
           ) : (
             <div>Nothing actions</div>

@@ -29,30 +29,31 @@ export default function Usage() {
       <Code
         height="auto"
         width="100%"
-        value={`import React, { useCallback, useContext } from 'react';
-import { LoggerContainer, LoggerContext } from 'logrock';
+        value={`import React, { useCallback } from 'react';
+import { LoggerContainer } from 'logrock';
 
-export default function() {
-    const loggerCtx = useContext(LoggerContext);
-    const showMessage = useCallback((level, message, important) => {
-        alert(message);
-    });
+export default function Root() {
+    const showMessage = useCallback((level, message, ctx, important) => {
+        // ctx is the component/module name passed to the logger method
+        const label = ctx ? \`[\${ctx}] \${message}\` : message;
+        console[level](label);
+        if (important) alert(label);
+    }, []);
 
     return <LoggerContainer
            sessionID={window.sessionID}
-           limit={75} // stack limit. After overflowing the first item will be remove
+           limit={75} // stack limit. After overflowing the first item will be removed
            getCurrentDate={() => {
-                // You can replace default date to another format
+                // You can replace the default date with another format
                 return dayjs().format('YYYY-MM-DD HH:mm:ss');
            }}
            stdout={showMessage} // show logs for your users
            onError={stackData => {
-               // Send stack on your Backend or ElasticSearch or save it to file etc.
-               sendToServer(stack);
+               // Send stack to your backend, ElasticSearch, etc.
+               sendToServer(stackData);
            }}
            onPrepareStack={stack => {
-               // This is middleware
-               // Add extra data to stack before it will call onError
+               // Middleware — add extra data before onError is called
                stack.language = window.navigator.language;
                return stack;
            }}>
@@ -61,9 +62,9 @@ export default function() {
 }`}
       />
       <p>
-        <strong>4. You need to add the logger to any of the methods you want to cover our logging system.</strong>
+        <strong>4. Add the logger to any method you want to track. Use the second argument to tag entries with a component or module name.</strong>
       </p>
-      <p>For example, we have toggle component in React</p>
+      <p>For example, we have a Toggle component in React:</p>
       <Code
         height="auto"
         width="100%"
@@ -79,23 +80,30 @@ export default function Toggle(props) {
     return <div className={\`switch \${toggleState}\`} onClick={toggle} />;
 }`}
       />
-      <p>If you want to cover this code by logger you need to add logger.log to toggle method:</p>
+      <p>Add logger calls with a ctx string so you can trace which component produced each entry:</p>
       <Code
         height="auto"
         width="100%"
         value={`import React, { useState } from "react";
+import logger from "logrock";
 
 export default function Toggle(props) {
     const [toggleState, setToggleState] = useState("off");
 
     function toggle() {
-        let state = toggleState === "off" ? "on" : "off";
-        logger.info(\`React.Toggle|Toggle component changed state \${state}\`);
+        const state = toggleState === "off" ? "on" : "off";
+        logger.info(\`Toggle changed state to \${state}\`, "Toggle");
         setToggleState(state);
     }
 
     return <div className={\`switch \${toggleState}\`} onClick={toggle} />;
 }`}
+      />
+      <p>The entry stored in the stack will look like:</p>
+      <Code
+        height="auto"
+        width="100%"
+        value={`{ level: "info", ctx: "Toggle", message: "Toggle changed state to on" }`}
       />
     </>
   );

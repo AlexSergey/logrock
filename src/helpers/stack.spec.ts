@@ -1,4 +1,4 @@
-import { LogEntry, Stack } from '../types';
+import { LogEntry, LoggerLevels, Stack } from '../types';
 import LimitedArray from './limited-array';
 import { getStackData, onCriticalError } from './stack';
 
@@ -54,19 +54,19 @@ describe('getStackData', () => {
 
     it('populates actions from the collection', () => {
       const collection = new LimitedArray<LogEntry>();
-      collection.add({ log: 'action-a' } as unknown as LogEntry);
-      collection.add({ info: 'action-b' } as unknown as LogEntry);
+      collection.add({ ctx: '', level: 'log', message: 'action-a' } as LogEntry);
+      collection.add({ ctx: '', level: 'info', message: 'action-b' } as LogEntry);
       const result = getStackData(makeStack(), collection, {});
-      expect(result.actions).toContainEqual({ log: 'action-a' });
-      expect(result.actions).toContainEqual({ info: 'action-b' });
+      expect(result.actions).toContainEqual({ ctx: '', level: 'log', message: 'action-a' });
+      expect(result.actions).toContainEqual({ ctx: '', level: 'info', message: 'action-b' });
     });
 
     it('reflects the latest state of the collection on each call', () => {
       const stack = makeStack();
       const collection = new LimitedArray<LogEntry>();
-      collection.add({ log: 'first' } as unknown as LogEntry);
+      collection.add({ ctx: '', level: 'log', message: 'first' } as LogEntry);
       expect(getStackData(stack, collection, {}).actions.length).toBe(1);
-      collection.add({ log: 'second' } as unknown as LogEntry);
+      collection.add({ ctx: '', level: 'log', message: 'second' } as LogEntry);
       expect(getStackData(stack, collection, {}).actions.length).toBe(2);
     });
 
@@ -96,26 +96,26 @@ describe('onCriticalError', () => {
     it('adds a critical entry to the collection', () => {
       const collection = new LimitedArray<LogEntry>();
       onCriticalError(makeStack(), collection, {}, new Error('boom'), 42);
-      expect(collection.getData().some((i) => 'critical' in i)).toBe(true);
+      expect(collection.getData().some((i) => i.level === LoggerLevels.critical)).toBe(true);
     });
 
     it('critical entry has the correct line number', () => {
       const collection = new LimitedArray<LogEntry>();
       onCriticalError(makeStack(), collection, {}, new Error('crash'), 100);
-      const item = collection.getData().find((i) => 'critical' in i) as { critical: { line: number } };
-      expect(item.critical.line).toBe(100);
+      const item = collection.getData().find((i) => i.level === LoggerLevels.critical)!;
+      expect((item.message as { line: number }).line).toBe(100);
     });
 
     it('critical entry has the correct error message', () => {
       const collection = new LimitedArray<LogEntry>();
       onCriticalError(makeStack(), collection, {}, new Error('specific error'), 1);
-      const item = collection.getData().find((i) => 'critical' in i) as { critical: { message: string } };
-      expect(item.critical.message).toBe('specific error');
+      const item = collection.getData().find((i) => i.level === LoggerLevels.critical)!;
+      expect((item.message as { message: string }).message).toBe('specific error');
     });
 
-    it('returns an Stack that includes the critical action', () => {
+    it('returns a Stack that includes the critical action', () => {
       const result = onCriticalError(makeStack(), new LimitedArray<LogEntry>(), {}, new Error('test crash'), 1);
-      expect(result.actions.some((i) => 'critical' in i)).toBe(true);
+      expect(result.actions.some((i) => i.level === LoggerLevels.critical)).toBe(true);
     });
 
     it('passes props through to getStackData — calls onPrepareStack', () => {

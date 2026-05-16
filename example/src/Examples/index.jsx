@@ -13,8 +13,9 @@ global.sessionID = `sessionid-${Math.random()
   .substr(3, 9)}`;
 
 export default function () {
-  const showMessage = useCallback((level, message, important) => {
-    console[level](message);
+  const showMessage = useCallback((level, message, ctx, important) => {
+    const label = ctx ? `[${ctx}] ${message}` : message;
+    console[level](label);
 
     const notificatorTypes = {
       log: 'success',
@@ -26,7 +27,7 @@ export default function () {
     if (important &&
       notificatorTypes[level] &&
       toast[notificatorTypes[level]]) {
-      toast[notificatorTypes[level]](message);
+      toast[notificatorTypes[level]](label);
     }
   }, []);
 
@@ -104,13 +105,13 @@ export default function () {
                     <tr>
                       <td>
                         <p style={{ fontSize: '16px' }}><strong>logger.log</strong></p>
-                        <button className="btn btn-primary mb-2" onClick={() => logger.log('module|test log', true)}>
+                        <button className="btn btn-primary mb-2" onClick={() => logger.log('test log', 'Examples', true)}>
                           log
                         </button>
                       </td>
                       <td>
                         <p style={{ fontSize: '16px' }}><strong>logger.info</strong></p>
-                        <button className="btn btn-info mb-2" onClick={() => logger.info('module|test info', true)}>
+                        <button className="btn btn-info mb-2" onClick={() => logger.info('test info', 'Examples', true)}>
                           info
                         </button>
                       </td>
@@ -124,14 +125,14 @@ export default function () {
                             backgroundColor: '#dedede',
                             backgroundImage: 'none'
                           }}
-                          onClick={() => logger.debug('module|test debug', true)}
+                          onClick={() => logger.debug('test debug', 'Examples', true)}
                         >
                           debug
                         </button>
                       </td>
                       <td>
                         <p style={{ fontSize: '16px' }}><strong>logger.warn</strong></p>
-                        <button className="btn btn-warning mb-2" onClick={() => logger.warn('module|test warn', true)}>
+                        <button className="btn btn-warning mb-2" onClick={() => logger.warn('test warn', 'Examples', true)}>
                           warn
                         </button>
                       </td>
@@ -139,7 +140,7 @@ export default function () {
                     <tr>
                       <td>
                         <p style={{ fontSize: '16px' }}><strong>logger.error</strong></p>
-                        <button className="btn btn-danger mb-2" onClick={() => logger.error('module|test error', true)}>
+                        <button className="btn btn-danger mb-2" onClick={() => logger.error('test error', 'Examples', true)}>
                           error
                         </button>
                       </td>

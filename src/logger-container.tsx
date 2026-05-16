@@ -15,7 +15,7 @@ import BsodComponent, { BsodProps } from './components/bsod';
 import { getStackData, onCriticalError } from './helpers/stack';
 import { getCurrentDate } from './helpers/utils';
 import { logger } from './logger';
-import { LogEntry, LoggerInstance, Stack } from './types';
+import { LogEntry, LoggerInstance, Stack, Stdout } from './types';
 
 interface LoggerContextValue {
   getStackData: () => Stack;
@@ -50,7 +50,7 @@ interface LoggerContainerProps {
   onError?: (stack: Stack) => void;
   onPrepareStack?: (stack: Stack) => Stack;
   sessionID?: boolean | number | string;
-  stdout?: (level: string, message: string, important?: boolean) => void;
+  stdout?: Stdout;
 }
 
 interface StackRef {

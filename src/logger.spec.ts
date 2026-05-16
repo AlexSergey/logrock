@@ -50,20 +50,22 @@ describe('logger', () => {
       const loggerA = createLogger();
       const loggerB = createLogger();
       loggerA.log('from-a');
-      expect(loggerB.getStackCollection().getData()).not.toContainEqual({ log: 'from-a' });
+      expect(loggerB.getStackCollection().getData()).not.toContainEqual(
+        expect.objectContaining({ level: 'log', message: 'from-a' }),
+      );
       expect(loggerB.getCounter()).toBe(0);
     });
   });
 
   describe('positive cases', () => {
     (['log', 'info', 'debug', 'warn', 'error'] as const).forEach((method) => {
-      it(`logs ${method} with the correct key and value`, () => {
+      it(`logs ${method} with the correct level and message`, () => {
         const logger = createLogger();
         logger[method](`test ${method} method`);
         const items = logger.getStackCollection().getData();
         const last = items[items.length - 1]!;
-        expect(Object.keys(last)[0]).toBe(method);
-        expect(last).toStrictEqual({ [method]: `test ${method} method` });
+        expect(last.level).toBe(method);
+        expect(last).toStrictEqual({ ctx: '', level: method, message: `test ${method} method` });
       });
     });
 
@@ -71,8 +73,8 @@ describe('logger', () => {
       const logger = createLogger();
       const stdout = jest.fn();
       logger.setUp({ stdout });
-      logger.log('msg', true);
-      expect(stdout).toHaveBeenCalledWith('log', 'msg', true);
+      logger.log('msg', undefined, true);
+      expect(stdout).toHaveBeenCalledWith('log', 'msg', '', true);
     });
 
     it('passes important: false to stdout by default', () => {
@@ -80,7 +82,31 @@ describe('logger', () => {
       const stdout = jest.fn();
       logger.setUp({ stdout });
       logger.log('msg');
-      expect(stdout).toHaveBeenCalledWith('log', 'msg', false);
+      expect(stdout).toHaveBeenCalledWith('log', 'msg', '', false);
+    });
+
+    it('passes ctx to stdout when provided', () => {
+      const logger = createLogger();
+      const stdout = jest.fn();
+      logger.setUp({ stdout });
+      logger.log('msg', 'MyComponent');
+      expect(stdout).toHaveBeenCalledWith('log', 'msg', 'MyComponent', false);
+    });
+
+    it('stores ctx in the log entry when provided', () => {
+      const logger = createLogger();
+      logger.log('msg', 'MyComponent');
+      const items = logger.getStackCollection().getData();
+      const last = items[items.length - 1]!;
+      expect(last).toStrictEqual({ ctx: 'MyComponent', level: 'log', message: 'msg' });
+    });
+
+    it('defaults ctx to empty string when not provided', () => {
+      const logger = createLogger();
+      logger.log('msg');
+      const items = logger.getStackCollection().getData();
+      const last = items[items.length - 1]!;
+      expect(last).toStrictEqual({ ctx: '', level: 'log', message: 'msg' });
     });
 
     it('starts counter at zero', () => {
@@ -103,8 +129,8 @@ describe('logger', () => {
       logger.setUp({ active: true });
       logger.log('logged');
       const items = logger.getStackCollection().getData();
-      expect(items).toContainEqual({ log: 'logged' });
-      expect(items).not.toContainEqual({ log: 'ignored' });
+      expect(items).toContainEqual({ ctx: '', level: 'log', message: 'logged' });
+      expect(items).not.toContainEqual({ ctx: '', level: 'log', message: 'ignored' });
     });
 
     it('replaces stdout when setUp is called again with a new function', () => {
@@ -127,8 +153,8 @@ describe('logger', () => {
       logger.log('msg3');
       const items = logger.getStackCollection().getData();
       expect(items.length).toBe(2);
-      expect(items).not.toContainEqual({ log: 'msg1' });
-      expect(items).toContainEqual({ log: 'msg3' });
+      expect(items).not.toContainEqual({ ctx: '', level: 'log', message: 'msg1' });
+      expect(items).toContainEqual({ ctx: '', level: 'log', message: 'msg3' });
     });
   });
 });

@@ -1,5 +1,5 @@
 import LimitedArray from './helpers/limited-array';
-import { LogEntry, LoggerInstance, StackData } from './types';
+import { LogEntry, LoggerInstance, LoggerLevels, Stdout } from './types';
 
 /**
  * Types:
@@ -13,7 +13,7 @@ import { LogEntry, LoggerInstance, StackData } from './types';
 class Logger {
   public active = true;
 
-  public stdout?: (level: string, message: string, important: boolean) => void;
+  public stdout?: Stdout;
 
   private _count = 0;
 
@@ -25,50 +25,38 @@ class Logger {
     this.stackCollection = new LimitedArray<LogEntry>();
   }
 
-  _handler(message: string, level: string, important: boolean): void {
+  _handler(message: string, level: LoggerLevels, important: boolean, ctx = ''): void {
     if (!this.ignoreLogging && this.active) {
       if (typeof this.stdout === 'function') {
-        this.stdout(level, message, important);
+        this.stdout(level, message, ctx, important);
       }
 
-      let stackData: StackData | undefined;
-
-      if (typeof message === 'string') {
-        const temp: Record<string, string> = {};
-        temp[level] = message;
-        stackData = temp as StackData;
-      } else if (typeof message === 'object') {
-        stackData = message;
-      }
-
-      if (stackData) {
-        this.stackCollection.add({ ...stackData });
-      }
+      this.stackCollection.add({ ctx, level, message });
       this._count += 1;
     }
   }
 
-  debug(message: string, important?: boolean): void {
-    this._handler(message, 'debug', !!important);
+  debug(message: string, ctx?: string, important?: boolean): void {
+    this._handler(message, LoggerLevels.debug, !!important, ctx);
   }
 
-  error(message: string, important?: boolean): void {
-    this._handler(message, 'error', !!important);
+  error(message: string, ctx?: string, important?: boolean): void {
+    this._handler(message, LoggerLevels.error, !!important, ctx);
   }
 
   getCounter = (): number => this._count;
 
   getStackCollection = (): LimitedArray<LogEntry> => this.stackCollection;
 
-  info(message: string, important?: boolean): void {
-    this._handler(message, 'info', !!important);
+  info(message: string, ctx?: string, important?: boolean): void {
+    this._handler(message, LoggerLevels.info, !!important, ctx);
   }
 
-  log(message: string, important?: boolean): void {
-    this._handler(message, 'log', !!important);
+  log(message: string, ctx?: string, important?: boolean): void {
+    this._handler(message, LoggerLevels.log, !!important, ctx);
   }
 
-  setUp(props: { active?: boolean; stdout?: (level: string, message: string, important?: boolean) => void }): void {
+  setUp(props: { active?: boolean; stdout?: Stdout }): void {
     if (typeof props.active === 'boolean') {
       this.active = Boolean(props.active);
     }
@@ -77,8 +65,8 @@ class Logger {
     }
   }
 
-  warn(message: string, important?: boolean): void {
-    this._handler(message, 'warn', !!important);
+  warn(message: string, ctx?: string, important?: boolean): void {
+    this._handler(message, LoggerLevels.warn, !!important, ctx);
   }
 }
 
