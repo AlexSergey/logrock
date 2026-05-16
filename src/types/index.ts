@@ -45,4 +45,4 @@ export interface StackUtilProps {
   onPrepareStack?: (stack: Stack) => Stack;
 }
 
-export type Stdout = (level: string, message: string, ctx: string, important: boolean) => void;
+export type Stdout = (level: LoggerLevels, message: string, ctx: string, important: boolean) => void;

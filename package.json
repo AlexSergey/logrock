@@ -1,6 +1,6 @@
 {
   "name": "logrock",
-  "version": "5.0.1",
+  "version": "5.0.2",
   "private": false,
   "description": "This module can help you build error tracking & crash reporting system for your React application.",
   "keywords": [
