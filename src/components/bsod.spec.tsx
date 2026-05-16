@@ -5,11 +5,8 @@ import Bsod from './bsod';
 
 const createStack = (actions: LogEntry[]): Stack => ({
   actions,
-  env: {},
-  keyboardPressed: null,
-  mousePressed: null,
-  session: { end: '2026-01-01', start: '2026-01-01' },
-  sessionId: undefined,
+  env: '',
+  traceId: undefined,
 });
 
 const entry = (level: LoggerLevels, message: string, ctx = ''): LogEntry => ({ ctx, level, message, payload: {} });

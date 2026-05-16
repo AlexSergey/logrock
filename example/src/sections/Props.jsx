@@ -19,35 +19,35 @@ const LoggerContainerProps = () => {
                 </tr>
                 <tr>
                     <th>
-                        bsodActive
-                    </th>
-                    <td>
-                        Boolean[true]
-                    </td>
-                    <td>
-                        Show BSOD when an error occurs in your system. I recommend you to turn it off in production.
-                    </td>
-                </tr>
-                <tr>
-                    <th>
-                        sessionID
-                    </th>
-                    <td>
-                        Number
-                    </td>
-                    <td>
-                        If you want to connect your session with backend actions you can generate SessionID and add it to all your requests.
-                    </td>
-                </tr>
-                <tr>
-                    <th>
                         bsod
                     </th>
                     <td>
-                        Component
+                        false | Component
                     </td>
                     <td>
-                        Default Blue Screen Of Death component. You can change it to another.
+                        Pass <code>false</code> to suppress the BSOD overlay entirely. Pass a component to replace the default overlay with your own.
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        traceID
+                    </th>
+                    <td>
+                        string | number
+                    </td>
+                    <td>
+                        Identifier stored as <code>traceId</code> in the stack. Use it to correlate errors with a backend request or session.
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        env
+                    </th>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        Environment label stored in the stack (e.g. <code>'production'</code>, <code>window.location.origin</code>).
                     </td>
                 </tr>
                 <tr>
@@ -59,17 +59,6 @@ const LoggerContainerProps = () => {
                     </td>
                     <td>
                         Limit for actions that user made.
-                    </td>
-                </tr>
-                <tr>
-                    <th>
-                        getCurrentDate
-                    </th>
-                    <td>
-                        Function
-                    </td>
-                    <td>
-                        Format date function. By default - new Date().toLocaleString()
                     </td>
                 </tr>
                 <tr>
@@ -144,7 +133,8 @@ logger.error("Request failed", "ApiClient");`} />
         <p>Pass <code>true</code> as the third argument to forward the message to the <code>stdout</code> callback. Use this to surface important events to the user via a toast or alert.</p>
         <Code height={'auto'} value={`logger.error("Session expired. Please log in again.", "Auth", true);`} />
         <p>Each entry in the stack is a flat object:</p>
-        <Code height={'auto'} value={`// { level, ctx, message: string, payload: Record<string, unknown> }
+        <Code height={'auto'} value={`// LogEntry — one recorded action
+// { level: LoggerLevels, ctx: string, message: string, payload: Record<string, unknown> }
 
 { level: "log",   ctx: "SettingsPanel", message: "User opened settings", payload: {} }
 { level: "error", ctx: "ApiClient",     message: "Request failed",        payload: {} }
@@ -152,7 +142,10 @@ logger.error("Request failed", "ApiClient");`} />
   level: "critical", ctx: "",
   message: "Unhandled error",
   payload: { line: 42, stack: ["Error: Unhandled error", "  at ..."] }
-}`} />
+}
+
+// Stack — the full snapshot passed to onError / returned by getStackData
+// { actions: LogEntry[], env: string, traceId: string | number | undefined }`} />
     </>;
 };
 

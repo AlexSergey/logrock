@@ -4,11 +4,8 @@ import { getStackData, onCriticalError } from './stack';
 
 const makeStack = (overrides: Partial<Stack> = {}): Stack => ({
   actions: [],
-  env: {},
-  keyboardPressed: null,
-  mousePressed: null,
-  session: { end: '', start: '2024-01-01' },
-  sessionId: undefined,
+  env: '',
+  traceId: undefined,
   ...overrides,
 });
 
@@ -23,35 +20,9 @@ describe('getStackData', () => {
       getStackData(makeStack(), new LimitedArray<LogEntry>(), {});
       expect(spy).not.toHaveBeenCalled();
     });
-
-    it('sets env.lang to empty string when navigator is unavailable', () => {
-      const original = globalThis.navigator;
-      Object.defineProperty(globalThis, 'navigator', { configurable: true, value: null });
-      const result = getStackData(makeStack(), new LimitedArray<LogEntry>(), {});
-      Object.defineProperty(globalThis, 'navigator', { configurable: true, value: original });
-      expect(result.env.lang).toBe('');
-    });
   });
 
   describe('positive cases', () => {
-    it('populates env.href from location.href', () => {
-      const result = getStackData(makeStack(), new LimitedArray<LogEntry>(), {});
-      expect(result.env.href).toBe(globalThis.location.href);
-    });
-
-    it('sets session.end from the getCurrentDate prop', () => {
-      const result = getStackData(makeStack(), new LimitedArray<LogEntry>(), {
-        getCurrentDate: () => '2024-12-31',
-      });
-      expect(result.session.end).toBe('2024-12-31');
-    });
-
-    it('falls back to built-in getCurrentDate when prop is absent', () => {
-      const result = getStackData(makeStack(), new LimitedArray<LogEntry>(), {});
-      expect(typeof result.session.end).toBe('string');
-      expect(result.session.end.length).toBeGreaterThan(0);
-    });
-
     it('populates actions from the collection', () => {
       const collection = new LimitedArray<LogEntry>();
       collection.add({ ctx: '', level: LoggerLevels.log, message: 'action-a', payload: {} } as LogEntry);
@@ -81,12 +52,17 @@ describe('getStackData', () => {
       const stack = makeStack();
       const result = getStackData(stack, new LimitedArray<LogEntry>(), {});
       expect(result).not.toBe(stack);
-      expect(result.session).not.toBe(stack.session);
+      expect(result.actions).not.toBe(stack.actions);
     });
 
-    it('preserves sessionId in the returned clone', () => {
-      const result = getStackData(makeStack({ sessionId: 'my-id' }), new LimitedArray<LogEntry>(), {});
-      expect(result.sessionId).toBe('my-id');
+    it('preserves traceId in the returned clone', () => {
+      const result = getStackData(makeStack({ traceId: 'my-id' }), new LimitedArray<LogEntry>(), {});
+      expect(result.traceId).toBe('my-id');
+    });
+
+    it('preserves env in the returned clone', () => {
+      const result = getStackData(makeStack({ env: 'production' }), new LimitedArray<LogEntry>(), {});
+      expect(result.env).toBe('production');
     });
   });
 });
@@ -122,17 +98,6 @@ describe('onCriticalError', () => {
       const onPrepareStack = jest.fn((s: Stack) => s);
       onCriticalError(makeStack(), new LimitedArray<LogEntry>(), { onPrepareStack }, new Error('err'), 1);
       expect(onPrepareStack).toHaveBeenCalledTimes(1);
-    });
-
-    it('uses custom getCurrentDate for session.end in the returned stack', () => {
-      const result = onCriticalError(
-        makeStack(),
-        new LimitedArray<LogEntry>(),
-        { getCurrentDate: () => 'custom-date' },
-        new Error('err'),
-        1,
-      );
-      expect(result.session.end).toBe('custom-date');
     });
   });
 });

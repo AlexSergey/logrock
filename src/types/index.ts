@@ -36,22 +36,12 @@ export type Message = Error | Record<string, string> | string;
 
 export interface Stack {
   actions: LogEntry[];
-  env: {
-    href?: string;
-    lang?: string;
-  };
-  keyboardPressed: null | string;
-  mousePressed: null | number;
+  env: string;
   onPrepareStack?: (s: Stack) => Stack;
-  session: {
-    end: string;
-    start: string;
-  };
-  sessionId: number | string | undefined;
+  traceId: number | string | undefined;
 }
 
 export interface StackUtilProps {
-  getCurrentDate?: () => string;
   onPrepareStack?: (stack: Stack) => Stack;
 }
 

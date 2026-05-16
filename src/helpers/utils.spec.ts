@@ -1,23 +1,10 @@
 import { LogEntry, Stack } from '../types';
-import { clone, getCurrentDate } from './utils';
+import { clone } from './utils';
 
 const makeStack = (): Stack => ({
   actions: [],
-  env: { href: 'http://example.com', lang: 'en' },
-  keyboardPressed: 'KeyA',
-  mousePressed: 1,
-  session: { end: '2024-01-02', start: '2024-01-01' },
-  sessionId: 'test-session',
-});
-
-describe('getCurrentDate', () => {
-  describe('positive cases', () => {
-    it('returns a non-empty string', () => {
-      const result = getCurrentDate();
-      expect(typeof result).toBe('string');
-      expect(result.length).toBeGreaterThan(0);
-    });
-  });
+  env: 'http://example.com',
+  traceId: 'test-trace',
 });
 
 describe('clone', () => {
@@ -27,11 +14,9 @@ describe('clone', () => {
       expect(clone(stack)).not.toBe(stack);
     });
 
-    it('nested objects are separate references', () => {
+    it('actions array is a separate reference', () => {
       const stack = makeStack();
       const cloned = clone(stack);
-      expect(cloned.session).not.toBe(stack.session);
-      expect(cloned.env).not.toBe(stack.env);
       expect(cloned.actions).not.toBe(stack.actions);
     });
 
@@ -44,8 +29,8 @@ describe('clone', () => {
     it('mutations to clone do not affect the original', () => {
       const stack = makeStack();
       const cloned = clone(stack);
-      cloned.session.start = 'mutated';
-      expect(stack.session.start).toBe('2024-01-01');
+      cloned.env = 'mutated';
+      expect(stack.env).toBe('http://example.com');
     });
   });
 
@@ -53,19 +38,8 @@ describe('clone', () => {
     it('deep clones primitive fields', () => {
       const stack = makeStack();
       const cloned = clone(stack);
-      expect(cloned.sessionId).toBe(stack.sessionId);
-      expect(cloned.mousePressed).toBe(stack.mousePressed);
-      expect(cloned.keyboardPressed).toBe(stack.keyboardPressed);
-    });
-
-    it('deep clones session', () => {
-      const stack = makeStack();
-      expect(clone(stack).session).toEqual(stack.session);
-    });
-
-    it('deep clones env', () => {
-      const stack = makeStack();
-      expect(clone(stack).env).toEqual(stack.env);
+      expect(cloned.traceId).toBe(stack.traceId);
+      expect(cloned.env).toBe(stack.env);
     });
 
     it('deep clones actions including nested objects', () => {

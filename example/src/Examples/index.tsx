@@ -131,9 +131,9 @@ export default function Examples() {
         !
       </p>
       <LoggerContainer
-        sessionID={sessionID}
+        traceID={sessionID}
+        env={typeof window !== 'undefined' ? window.location.origin : ''}
         limit={75}
-        getCurrentDate={() => dayjs().format('YYYY-MM-DD HH:mm:ss')}
         stdout={showMessage}
         onError={(stackData) => {
           console.log(stackData);
@@ -159,12 +159,14 @@ export default function Examples() {
           const extended = stack as Stack & {
             screen: Record<string, unknown>;
             device: Record<string, unknown>;
-            env: { browser: string; os: string };
+            browser: string;
+            os: string;
           };
+
           extended.screen = screen;
           extended.device = device;
-          extended.env.browser = BROWSER;
-          extended.env.os = OS;
+          extended.browser = BROWSER;
+          extended.os = OS;
 
           return stack;
         }}

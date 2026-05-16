@@ -39,10 +39,9 @@ export default function () {
         code <a href="https://github.com/AlexSergey/logrock/blob/master/example/src/Examples/index.jsx" target="_blank">here</a>!
       </p>
       <LoggerContainer
-        sessionID={global.sessionID}
+        traceID={global.sessionID}
+        env={typeof window !== 'undefined' ? window.location.origin : ''}
         limit={75}
-        getCurrentDate={() => dayjs()
-          .format('YYYY-MM-DD HH:mm:ss')}
         stdout={showMessage}
         onError={(stackData) => {
           console.log(stackData);

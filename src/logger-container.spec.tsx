@@ -38,9 +38,9 @@ describe('LoggerContainer', () => {
       expect(stdout).not.toHaveBeenCalled();
     });
 
-    it('does not render BSOD when bsodActive is false', () => {
+    it('does not render BSOD when bsod={false}', () => {
       render(
-        <LoggerContainer bsodActive={false}>
+        <LoggerContainer bsod={false}>
           <div />
         </LoggerContainer>,
       );
@@ -75,21 +75,21 @@ describe('LoggerContainer', () => {
       consoleSpy.mockRestore();
     });
 
-    it('leaves sessionId undefined when sessionID prop is a boolean', () => {
+    it('leaves traceId undefined when traceID prop is omitted', () => {
       const { result } = renderHook(() => useLoggerApi(), {
-        wrapper: ({ children }: PropsWithChildren) => <LoggerContainer sessionID={false}>{children}</LoggerContainer>,
+        wrapper: ({ children }: PropsWithChildren) => <LoggerContainer>{children}</LoggerContainer>,
       });
-      expect(result.current.getStackData().sessionId).toBeUndefined();
+      expect(result.current.getStackData().traceId).toBeUndefined();
     });
 
-    it('does not attach event listeners when active is false', () => {
-      const addSpy = jest.spyOn(document, 'addEventListener');
+    it('does not attach error listener when active is false', () => {
+      const addSpy = jest.spyOn(window, 'addEventListener');
       render(
         <LoggerContainer active={false}>
           <div />
         </LoggerContainer>,
       );
-      expect(addSpy).not.toHaveBeenCalledWith('mousedown', expect.any(Function));
+      expect(addSpy).not.toHaveBeenCalledWith('error', expect.any(Function));
       addSpy.mockRestore();
     });
   });
@@ -130,7 +130,7 @@ describe('LoggerContainer', () => {
       });
     });
 
-    it('triggerError invokes onError with an Stack', () => {
+    it('triggerError invokes onError with a Stack', () => {
       const onError = jest.fn();
       const { result } = renderHook(() => useLoggerApi(), { wrapper: createWrapper({ onError }) });
       act(() => {
@@ -141,38 +141,30 @@ describe('LoggerContainer', () => {
       expect(firstCall[0]).toHaveProperty('actions');
     });
 
-    it('sets sessionId when sessionID prop is a string', () => {
+    it('sets traceId when traceID prop is a string', () => {
       const { result } = renderHook(() => useLoggerApi(), {
-        wrapper: ({ children }: PropsWithChildren) => (
-          <LoggerContainer sessionID="my-session">{children}</LoggerContainer>
-        ),
+        wrapper: ({ children }: PropsWithChildren) => <LoggerContainer traceID="my-trace">{children}</LoggerContainer>,
       });
-      expect(result.current.getStackData().sessionId).toBe('my-session');
+      expect(result.current.getStackData().traceId).toBe('my-trace');
     });
 
-    it('sets sessionId when sessionID prop is a number', () => {
+    it('sets traceId when traceID prop is a number', () => {
       const { result } = renderHook(() => useLoggerApi(), {
-        wrapper: ({ children }: PropsWithChildren) => <LoggerContainer sessionID={42}>{children}</LoggerContainer>,
+        wrapper: ({ children }: PropsWithChildren) => <LoggerContainer traceID={42}>{children}</LoggerContainer>,
       });
-      expect(result.current.getStackData().sessionId).toBe(42);
+      expect(result.current.getStackData().traceId).toBe(42);
     });
 
-    it('uses custom getCurrentDate for session.start', () => {
+    it('stores env string in stack data', () => {
       const { result } = renderHook(() => useLoggerApi(), {
-        wrapper: ({ children }: PropsWithChildren) => (
-          <LoggerContainer getCurrentDate={() => 'custom-start'}>{children}</LoggerContainer>
-        ),
+        wrapper: ({ children }: PropsWithChildren) => <LoggerContainer env="production">{children}</LoggerContainer>,
       });
-      expect(result.current.getStackData().session.start).toBe('custom-start');
+      expect(result.current.getStackData().env).toBe('production');
     });
 
-    it('uses custom getCurrentDate for session.end', () => {
-      const { result } = renderHook(() => useLoggerApi(), {
-        wrapper: ({ children }: PropsWithChildren) => (
-          <LoggerContainer getCurrentDate={() => 'custom-end'}>{children}</LoggerContainer>
-        ),
-      });
-      expect(result.current.getStackData().session.end).toBe('custom-end');
+    it('defaults env to empty string when not provided', () => {
+      const { result } = renderHook(() => useLoggerApi(), { wrapper: createWrapper() });
+      expect(result.current.getStackData().env).toBe('');
     });
 
     it('calls onPrepareStack when getStackData is invoked', () => {
@@ -221,7 +213,17 @@ describe('LoggerContainer', () => {
       expect(stackData.actions.some((a) => a.level === LoggerLevels.critical)).toBe(true);
     });
 
-    it('uses the custom bsod component when the bsod prop is provided', () => {
+    it('renders the built-in BSOD by default', () => {
+      render(
+        <LoggerContainer>
+          <div />
+        </LoggerContainer>,
+      );
+      fireWindowError();
+      expect(screen.getByText('Actions:')).toBeInTheDocument();
+    });
+
+    it('renders a custom bsod component when one is passed', () => {
       const CustomBsod = ({ count }: BsodProps): ReactElement => <div data-testid="custom-bsod">count:{count}</div>;
       render(
         <LoggerContainer bsod={CustomBsod}>
@@ -230,46 +232,6 @@ describe('LoggerContainer', () => {
       );
       fireWindowError();
       expect(screen.getByTestId('custom-bsod')).toBeInTheDocument();
-    });
-
-    it('records mousePressed in stack data on mousedown', () => {
-      const { result } = renderHook(() => useLoggerApi(), { wrapper: createWrapper() });
-      act(() => {
-        document.dispatchEvent(new MouseEvent('mousedown', { button: 2 }));
-      });
-      expect(result.current.getStackData().mousePressed).toBe(2);
-    });
-
-    it('resets mousePressed to null after mouseup', () => {
-      jest.useFakeTimers();
-      const { result } = renderHook(() => useLoggerApi(), { wrapper: createWrapper() });
-      act(() => {
-        document.dispatchEvent(new MouseEvent('mousedown', { button: 1 }));
-        document.dispatchEvent(new MouseEvent('mouseup'));
-        jest.runAllTimers();
-      });
-      expect(result.current.getStackData().mousePressed).toBeNull();
-      jest.useRealTimers();
-    });
-
-    it('records keyboardPressed in stack data on keydown', () => {
-      const { result } = renderHook(() => useLoggerApi(), { wrapper: createWrapper() });
-      act(() => {
-        document.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyA' }));
-      });
-      expect(result.current.getStackData().keyboardPressed).toBe('KeyA');
-    });
-
-    it('resets keyboardPressed to null after keyup', () => {
-      jest.useFakeTimers();
-      const { result } = renderHook(() => useLoggerApi(), { wrapper: createWrapper() });
-      act(() => {
-        document.dispatchEvent(new KeyboardEvent('keydown', { code: 'ShiftLeft' }));
-        document.dispatchEvent(new KeyboardEvent('keyup'));
-        jest.runAllTimers();
-      });
-      expect(result.current.getStackData().keyboardPressed).toBeNull();
-      jest.useRealTimers();
     });
   });
 });

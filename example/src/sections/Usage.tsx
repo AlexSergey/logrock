@@ -41,12 +41,9 @@ export default function Root() {
     }, []);
 
     return <LoggerContainer
-           sessionID={window.sessionID}
+           traceID={window.sessionID}
+           env={window.location.origin}
            limit={75} // stack limit. After overflowing the first item will be removed
-           getCurrentDate={() => {
-                // You can replace the default date with another format
-                return dayjs().format('YYYY-MM-DD HH:mm:ss');
-           }}
            stdout={showMessage} // show logs for your users
            onError={stackData => {
                // Send stack to your backend, ElasticSearch, etc.

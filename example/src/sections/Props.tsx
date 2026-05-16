@@ -14,32 +14,33 @@ function LoggerContainerProps() {
             <td>Turn on/off logger system. You can turn it off in the test environment.</td>
           </tr>
           <tr>
-            <th>bsodActive</th>
-            <td>Boolean[true]</td>
-            <td>Show BSOD when an error occurs in your system. I recommend you to turn it off in production.</td>
-          </tr>
-          <tr>
-            <th>sessionID</th>
-            <td>Number</td>
+            <th>bsod</th>
+            <td>false | Component</td>
             <td>
-              If you want to connect your session with backend actions you can generate SessionID and add it to all your
-              requests.
+              Pass <code>false</code> to suppress the BSOD overlay entirely. Pass a component to replace the default
+              overlay with your own.
             </td>
           </tr>
           <tr>
-            <th>bsod</th>
-            <td>Component</td>
-            <td>Default Blue Screen Of Death component. You can change it to another.</td>
+            <th>traceID</th>
+            <td>string | number</td>
+            <td>
+              Identifier stored as <code>traceId</code> in the stack. Use it to correlate errors with a backend request
+              or session.
+            </td>
+          </tr>
+          <tr>
+            <th>env</th>
+            <td>string</td>
+            <td>
+              Environment label stored in the stack (e.g. <code>&apos;production&apos;</code>,{' '}
+              <code>window.location.origin</code>).
+            </td>
           </tr>
           <tr>
             <th>limit</th>
             <td>Number[25]</td>
             <td>Limit for actions that user made.</td>
-          </tr>
-          <tr>
-            <th>getCurrentDate</th>
-            <td>Function</td>
-            <td>Format date function. By default - new Date().toLocaleString()</td>
           </tr>
           <tr>
             <th>onError</th>
@@ -143,12 +144,8 @@ logger.error("Request failed", "ApiClient");`}
       <Code
         height="auto"
         width="100%"
-        value={`// interface LogEntry {
-//   level: LoggerLevels;
-//   ctx: string;
-//   message: string;
-//   payload: Record<string, unknown>;
-// }
+        value={`// LogEntry — one recorded action
+// { level: LoggerLevels, ctx: string, message: string, payload: Record<string, unknown> }
 
 { level: "log",   ctx: "SettingsPanel", message: "User opened settings", payload: {} }
 { level: "error", ctx: "ApiClient",     message: "Request failed",        payload: {} }
@@ -156,7 +153,10 @@ logger.error("Request failed", "ApiClient");`}
   level: "critical", ctx: "",
   message: "Unhandled error",
   payload: { line: 42, stack: ["Error: Unhandled error", "  at ..."] }
-}`}
+}
+
+// Stack — the full snapshot passed to onError / returned by getStackData
+// { actions: LogEntry[], env: string, traceId: string | number | undefined }`}
       />
     </>
   );

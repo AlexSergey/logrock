@@ -50,9 +50,9 @@ function App() {
 export default function Root() {
   return (
     <LoggerContainer
-      sessionID={window.sessionID}
+      traceID={window.sessionID}
+      env="development"
       limit={75}
-      getCurrentDate={() => new Date().toISOString()}
       stdout={(level, message, ctx, important) => {
         if (important) alert(`[${ctx}] ${message}`);
       }}
@@ -183,16 +183,15 @@ function MyErrorScreen({ count, stackData, onClose }: BsodProps) {
 
 ### `<LoggerContainer>`
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `active` | `boolean` | `true` | Enable or disable logging and event listeners. Disable during tests to keep them isolated. |
-| `bsodActive` | `boolean` | `true` | Show or hide the BSOD overlay when a critical error occurs. |
-| `bsod` | `FunctionComponent<BsodProps>` | built-in | Custom component to render instead of the default BSOD overlay. |
-| `sessionID` | `string \| number` | — | Associates the session with a backend session ID for correlated error reports. |
-| `limit` | `number` | `25` | Maximum number of actions kept in the stack. Oldest entries are dropped when the limit is exceeded. |
-| `getCurrentDate` | `() => string` | `new Date().toLocaleString()` | Returns the timestamp recorded in the session metadata. |
-| `onError` | `(stack: Stack) => void` | — | Called when a critical error is captured. Use this to send the stack to your backend or error tracker. |
-| `onPrepareStack` | `(stack: Stack) => Stack` | — | Transform the stack before it is passed to `onError`. Return the modified stack. |
+| Prop | Type | Default | Description                                                                                                                                                               |
+| --- | --- | --- |---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `active` | `boolean` | `true` | Enable or disable logging and the error listener. Disable during tests to keep them isolated.                                                                             |
+| `bsod` | `false \| FunctionComponent<BsodProps>` | built-in | Pass `false` to suppress the overlay entirely. Pass a component to replace the default BSOD.                                                                              |
+| `traceID` | `string \| number` | — | Identifier stored as `traceId` in the stack. Use it to correlate the stack with a backend request or session.                                                             |
+| `env` | `string` | `''` | Environment label stored in the stack (e.g. `'production'`, `'development'`).                                                                                             |
+| `limit` | `number` | `25` | Maximum number of actions kept in the stack. Oldest entries are dropped when the limit is exceeded.                                                                       |
+| `onError` | `(stack: Stack) => void` | — | Called when a critical error is captured. Use this to send the stack to your backend or error tracker.                                                                    |
+| `onPrepareStack` | `(stack: Stack) => Stack` | — | Transform the stack before it is passed to `onError`. Return the modified stack.                                                                                          |
 | `stdout` | `(level: string, message: string, ctx: string, important: boolean) => void` | — | Called for every `logger.*` invocation. `ctx` is the component/module name passed to the logger method. When `important` is `true` the message was flagged by the caller. |
 
 ### `logger` methods
@@ -212,15 +211,23 @@ function MyErrorScreen({ count, stackData, onClose }: BsodProps) {
 Every entry in `stack.actions` is a flat object:
 
 ```ts
+// LogEntry — one recorded action
 interface LogEntry {
-  level: LoggerLevels;             // 'log' | 'info' | 'warn' | 'debug' | 'error' | 'critical'
-  ctx: string;                     // component/module name, empty string when omitted
-  message: string;                 // human-readable log text
-  payload: Record<string, unknown>; // structured data; {} for regular entries
+  level: LoggerLevels;              // 'log' | 'info' | 'warn' | 'debug' | 'error' | 'critical'
+  ctx: string;                      // component/module name, empty string when omitted
+  message: string;                  // human-readable log text
+  payload: Record<string, unknown>; // {} for regular entries; { line, stack } for critical
+}
+
+// Stack — the full snapshot sent to onError / returned by getStackData
+interface Stack {
+  actions: LogEntry[];              // recorded log entries (capped at limit)
+  env: string;                      // value passed via the env prop
+  traceId: string | number | undefined; // value passed via the traceID prop
 }
 ```
 
-For regular log entries `payload` is always `{}`. For critical entries `payload` contains the line number and stack trace:
+Examples of entries inside `stack.actions`:
 
 ```ts
 { level: 'log',   ctx: 'SettingsPanel', message: 'User opened settings', payload: {} }
