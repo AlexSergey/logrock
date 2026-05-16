@@ -97,7 +97,7 @@ logger.warn('Response time exceeded 2 s', 'ApiClient');
 logger.error('Failed to parse response', 'ApiClient');
 ```
 
-Each log entry in the stack will be `{ level: 'log', ctx: 'SettingsPanel', message: 'User opened settings panel' }`.
+Each log entry in the stack will be `{ level: 'log', ctx: 'SettingsPanel', message: 'User opened settings panel', payload: {} }`.
 
 ### Important flag
 
@@ -212,19 +212,25 @@ function MyErrorScreen({ count, stackData, onClose }: BsodProps) {
 Every entry in `stack.actions` is a flat object:
 
 ```ts
-type LogEntry = {
-  level: LoggerLevels;       // 'log' | 'info' | 'warn' | 'debug' | 'error' | 'critical'
-  ctx: string;               // component/module name, empty string when omitted
-  message: string | CriticalError; // log text, or error detail for critical entries
-};
+interface LogEntry {
+  level: LoggerLevels;             // 'log' | 'info' | 'warn' | 'debug' | 'error' | 'critical'
+  ctx: string;                     // component/module name, empty string when omitted
+  message: string;                 // human-readable log text
+  payload: Record<string, unknown>; // structured data; {} for regular entries
+}
 ```
 
-Examples:
+For regular log entries `payload` is always `{}`. For critical entries `payload` contains the line number and stack trace:
 
 ```ts
-{ level: 'log',      ctx: 'SettingsPanel', message: 'User opened settings' }
-{ level: 'error',    ctx: 'ApiClient',     message: 'Request failed' }
-{ level: 'critical', ctx: '',              message: { line: 42, message: '...', stack: [...] } }
+{ level: 'log',   ctx: 'SettingsPanel', message: 'User opened settings', payload: {} }
+{ level: 'error', ctx: 'ApiClient',     message: 'Request failed',        payload: {} }
+{
+  level: 'critical',
+  ctx: '',
+  message: 'Unhandled error message',
+  payload: { line: 42, stack: ['Error: Unhandled error message', '  at ...'] }
+}
 ```
 
 ## Browser Compatibility

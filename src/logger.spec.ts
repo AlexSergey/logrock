@@ -65,7 +65,7 @@ describe('logger', () => {
         const items = logger.getStackCollection().getData();
         const last = items[items.length - 1]!;
         expect(last.level).toBe(method);
-        expect(last).toStrictEqual({ ctx: '', level: method, message: `test ${method} method` });
+        expect(last).toStrictEqual({ ctx: '', level: method, message: `test ${method} method`, payload: {} });
       });
     });
 
@@ -98,7 +98,7 @@ describe('logger', () => {
       logger.log('msg', 'MyComponent');
       const items = logger.getStackCollection().getData();
       const last = items[items.length - 1]!;
-      expect(last).toStrictEqual({ ctx: 'MyComponent', level: 'log', message: 'msg' });
+      expect(last).toStrictEqual({ ctx: 'MyComponent', level: 'log', message: 'msg', payload: {} });
     });
 
     it('defaults ctx to empty string when not provided', () => {
@@ -106,7 +106,7 @@ describe('logger', () => {
       logger.log('msg');
       const items = logger.getStackCollection().getData();
       const last = items[items.length - 1]!;
-      expect(last).toStrictEqual({ ctx: '', level: 'log', message: 'msg' });
+      expect(last).toStrictEqual({ ctx: '', level: 'log', message: 'msg', payload: {} });
     });
 
     it('starts counter at zero', () => {
@@ -129,8 +129,8 @@ describe('logger', () => {
       logger.setUp({ active: true });
       logger.log('logged');
       const items = logger.getStackCollection().getData();
-      expect(items).toContainEqual({ ctx: '', level: 'log', message: 'logged' });
-      expect(items).not.toContainEqual({ ctx: '', level: 'log', message: 'ignored' });
+      expect(items).toContainEqual({ ctx: '', level: 'log', message: 'logged', payload: {} });
+      expect(items).not.toContainEqual({ ctx: '', level: 'log', message: 'ignored', payload: {} });
     });
 
     it('replaces stdout when setUp is called again with a new function', () => {
@@ -153,8 +153,8 @@ describe('logger', () => {
       logger.log('msg3');
       const items = logger.getStackCollection().getData();
       expect(items.length).toBe(2);
-      expect(items).not.toContainEqual({ ctx: '', level: 'log', message: 'msg1' });
-      expect(items).toContainEqual({ ctx: '', level: 'log', message: 'msg3' });
+      expect(items).not.toContainEqual({ ctx: '', level: 'log', message: 'msg1', payload: {} });
+      expect(items).toContainEqual({ ctx: '', level: 'log', message: 'msg3', payload: {} });
     });
   });
 });

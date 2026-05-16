@@ -1,5 +1,5 @@
-import { CriticalError } from '../types';
-import { createCritical, getCritical, isCritical, mixUrl, serializeError } from './error-helpers';
+import { LoggerLevels } from '../types';
+import { createCritical, getCritical, isCritical } from './error-helpers';
 
 describe('isCritical', () => {
   describe('negative cases', () => {
@@ -45,81 +45,28 @@ describe('getCritical', () => {
   });
 });
 
-describe('serializeError', () => {
-  describe('negative cases', () => {
-    it('returns an empty stack array when error.stack is undefined', () => {
-      const error = new Error('no stack');
-      error.stack = undefined as unknown as string;
-      expect(serializeError(error, 1).stack).toEqual([]);
-    });
-
-    it('returns an empty message when error.message is empty', () => {
-      expect(serializeError(new Error(''), 1).message).toBe('');
-    });
-  });
-
-  describe('positive cases', () => {
-    it('preserves the line number', () => {
-      expect(serializeError(new Error('test'), 42).line).toBe(42);
-    });
-
-    it('preserves the error message', () => {
-      expect(serializeError(new Error('something went wrong'), 1).message).toBe('something went wrong');
-    });
-
-    it('splits stack string on newlines', () => {
-      const error = new Error('test');
-      error.stack = 'Error: test\n  at foo (bar.js:1:1)\n  at baz (qux.js:2:2)';
-      expect(serializeError(error, 1).stack).toEqual(['Error: test', '  at foo (bar.js:1:1)', '  at baz (qux.js:2:2)']);
-    });
-
-    it('returns a stack array with more than one entry for a real Error', () => {
-      expect(serializeError(new Error('real'), 1).stack.length).toBeGreaterThan(1);
-    });
-  });
-});
-
-describe('mixUrl', () => {
-  describe('positive cases', () => {
-    it('adds url from location.href', () => {
-      const input: CriticalError = { line: 1, message: 'msg', stack: [] };
-      const result = mixUrl(input);
-      expect(result).toHaveProperty('url', globalThis.location.href);
-    });
-
-    it('preserves all CriticalError fields', () => {
-      const input: CriticalError = { line: 5, message: 'err', stack: ['line1', 'line2'] };
-      const result = mixUrl(input);
-      expect(result.line).toBe(5);
-      expect(result.message).toBe('err');
-      expect(result.stack).toEqual(['line1', 'line2']);
-    });
-  });
-});
-
 describe('createCritical', () => {
   describe('positive cases', () => {
     it('returns an entry with level "critical"', () => {
-      expect(createCritical(new Error('boom'), 1).level).toBe('critical');
+      expect(createCritical(new Error('boom'), 1).level).toBe(LoggerLevels.critical);
     });
 
     it('returns an entry with empty ctx', () => {
       expect(createCritical(new Error('crash'), 99).ctx).toBe('');
     });
 
-    it('entry contains the correct line number', () => {
+    it('message is the error string', () => {
+      expect(createCritical(new Error('something failed'), 1).message).toBe('something failed');
+    });
+
+    it('payload contains the correct line number', () => {
       const entry = createCritical(new Error('crash'), 99);
-      expect((entry.message as { line: number }).line).toBe(99);
+      expect((entry.payload as { line: number }).line).toBe(99);
     });
 
-    it('entry contains the correct error message', () => {
-      const entry = createCritical(new Error('something failed'), 1);
-      expect((entry.message as { message: string }).message).toBe('something failed');
-    });
-
-    it('entry contains a stack array', () => {
+    it('payload contains a stack array', () => {
       const entry = createCritical(new Error('test'), 1);
-      expect(Array.isArray((entry.message as { stack: unknown[] }).stack)).toBe(true);
+      expect(Array.isArray((entry.payload as { stack: unknown[] }).stack)).toBe(true);
     });
   });
 });

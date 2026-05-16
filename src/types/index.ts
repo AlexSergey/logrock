@@ -9,28 +9,22 @@ export enum LoggerLevels {
   warn = 'warn',
 }
 
-export interface CriticalError {
-  line: number;
-  message: string;
-  stack: string[];
-  url?: string;
-}
-
 export interface LogEntry {
   ctx: string;
   level: LoggerLevels;
-  message: CriticalError | Message;
+  message: string;
+  payload: Record<string, unknown>;
 }
 
 export interface LoggerInstance {
-  debug(message: string, ctx?: string, important?: boolean): void;
-  error(message: string, ctx?: string, important?: boolean): void;
+  debug(message: Message, ctx?: string, important?: boolean): void;
+  error(message: Message, ctx?: string, important?: boolean): void;
   getCounter(): number;
   getStackCollection(): LimitedArray<LogEntry>;
-  info(message: string, ctx?: string, important?: boolean): void;
-  log(message: string, ctx?: string, important?: boolean): void;
+  info(message: Message, ctx?: string, important?: boolean): void;
+  log(message: Message, ctx?: string, important?: boolean): void;
   setUp(props: LoggerSetupOptions): void;
-  warn(message: string, ctx?: string, important?: boolean): void;
+  warn(message: Message, ctx?: string, important?: boolean): void;
 }
 
 export interface LoggerSetupOptions {
@@ -38,7 +32,7 @@ export interface LoggerSetupOptions {
   stdout?: Stdout;
 }
 
-export type Message = Record<string, string> | string;
+export type Message = Error | Record<string, string> | string;
 
 export interface Stack {
   actions: LogEntry[];

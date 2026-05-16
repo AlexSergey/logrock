@@ -143,11 +143,20 @@ logger.error("Request failed", "ApiClient");`}
       <Code
         height="auto"
         width="100%"
-        value={`// type LogEntry = { level: LoggerLevels; ctx: string; message: string | CriticalError }
+        value={`// interface LogEntry {
+//   level: LoggerLevels;
+//   ctx: string;
+//   message: string;
+//   payload: Record<string, unknown>;
+// }
 
-{ level: "log",   ctx: "SettingsPanel", message: "User opened settings" }
-{ level: "error", ctx: "ApiClient",     message: "Request failed" }
-{ level: "critical", ctx: "", message: { line: 42, message: "...", stack: [...] } }`}
+{ level: "log",   ctx: "SettingsPanel", message: "User opened settings", payload: {} }
+{ level: "error", ctx: "ApiClient",     message: "Request failed",        payload: {} }
+{
+  level: "critical", ctx: "",
+  message: "Unhandled error",
+  payload: { line: 42, stack: ["Error: Unhandled error", "  at ..."] }
+}`}
       />
     </>
   );

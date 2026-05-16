@@ -76,7 +76,7 @@ export default function Toggle(props) {
     return <div className={\`switch \${toggleState}\`} onClick={toggle} />;
 }`} />
         <p>The entry stored in the stack will look like:</p>
-        <Code height={'auto'} width={'100%'} value={`{ level: "info", ctx: "Toggle", message: "Toggle changed state to on" }`} />
+        <Code height={'auto'} width={'100%'} value={`{ level: "info", ctx: "Toggle", message: "Toggle changed state to on", payload: {} }`} />
     </>;
 };
 

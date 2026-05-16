@@ -103,7 +103,7 @@ export default function Toggle(props) {
       <Code
         height="auto"
         width="100%"
-        value={`{ level: "info", ctx: "Toggle", message: "Toggle changed state to on" }`}
+        value={`{ level: "info", ctx: "Toggle", message: "Toggle changed state to on", payload: {} }`}
       />
     </>
   );

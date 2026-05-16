@@ -144,11 +144,15 @@ logger.error("Request failed", "ApiClient");`} />
         <p>Pass <code>true</code> as the third argument to forward the message to the <code>stdout</code> callback. Use this to surface important events to the user via a toast or alert.</p>
         <Code height={'auto'} value={`logger.error("Session expired. Please log in again.", "Auth", true);`} />
         <p>Each entry in the stack is a flat object:</p>
-        <Code height={'auto'} value={`// { level: LoggerLevels; ctx: string; message: string | CriticalError }
+        <Code height={'auto'} value={`// { level, ctx, message: string, payload: Record<string, unknown> }
 
-{ level: "log",      ctx: "SettingsPanel", message: "User opened settings" }
-{ level: "error",    ctx: "ApiClient",     message: "Request failed" }
-{ level: "critical", ctx: "",              message: { line: 42, message: "...", stack: [...] } }`} />
+{ level: "log",   ctx: "SettingsPanel", message: "User opened settings", payload: {} }
+{ level: "error", ctx: "ApiClient",     message: "Request failed",        payload: {} }
+{
+  level: "critical", ctx: "",
+  message: "Unhandled error",
+  payload: { line: 42, stack: ["Error: Unhandled error", "  at ..."] }
+}`} />
     </>;
 };
 

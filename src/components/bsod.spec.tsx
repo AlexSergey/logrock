@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 
-import { CriticalError, LogEntry, LoggerLevels, Stack } from '../types';
+import { LogEntry, LoggerLevels, Stack } from '../types';
 import Bsod from './bsod';
 
 const createStack = (actions: LogEntry[]): Stack => ({
@@ -12,15 +12,20 @@ const createStack = (actions: LogEntry[]): Stack => ({
   sessionId: undefined,
 });
 
-const entry = (level: LoggerLevels, message: string, ctx = ''): LogEntry => ({ ctx, level, message });
+const entry = (level: LoggerLevels, message: string, ctx = ''): LogEntry => ({ ctx, level, message, payload: {} });
 
-const criticalError: CriticalError = {
+const criticalError = {
   line: 10,
   message: 'Something went wrong',
   stack: ['Error: Something went wrong', '  at foo (foo.js:1:1)'],
 };
 
-const criticalEntry = (ctx = ''): LogEntry => ({ ctx, level: LoggerLevels.critical, message: criticalError });
+const criticalEntry = (ctx = ''): LogEntry => ({
+  ctx,
+  level: LoggerLevels.critical,
+  message: criticalError.message,
+  payload: criticalError,
+});
 
 describe('Bsod', () => {
   describe('negative cases', () => {
@@ -100,12 +105,12 @@ describe('Bsod', () => {
     });
 
     it('shows error header with message when stack[0] is an empty string', () => {
-      const error: CriticalError = { line: 1, message: 'fallback message', stack: [''] };
+      const error = { line: 1, message: 'fallback message', stack: [''] };
       render(
         <Bsod
           count={1}
           onClose={jest.fn()}
-          stackData={createStack([{ ctx: '', level: LoggerLevels.critical, message: error }])}
+          stackData={createStack([{ ctx: '', level: LoggerLevels.critical, message: error.message, payload: error }])}
         />,
       );
       expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('fallback message');

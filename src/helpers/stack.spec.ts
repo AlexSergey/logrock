@@ -54,19 +54,19 @@ describe('getStackData', () => {
 
     it('populates actions from the collection', () => {
       const collection = new LimitedArray<LogEntry>();
-      collection.add({ ctx: '', level: 'log', message: 'action-a' } as LogEntry);
-      collection.add({ ctx: '', level: 'info', message: 'action-b' } as LogEntry);
+      collection.add({ ctx: '', level: LoggerLevels.log, message: 'action-a', payload: {} } as LogEntry);
+      collection.add({ ctx: '', level: LoggerLevels.info, message: 'action-b', payload: {} } as LogEntry);
       const result = getStackData(makeStack(), collection, {});
-      expect(result.actions).toContainEqual({ ctx: '', level: 'log', message: 'action-a' });
-      expect(result.actions).toContainEqual({ ctx: '', level: 'info', message: 'action-b' });
+      expect(result.actions).toContainEqual({ ctx: '', level: LoggerLevels.log, message: 'action-a', payload: {} });
+      expect(result.actions).toContainEqual({ ctx: '', level: LoggerLevels.info, message: 'action-b', payload: {} });
     });
 
     it('reflects the latest state of the collection on each call', () => {
       const stack = makeStack();
       const collection = new LimitedArray<LogEntry>();
-      collection.add({ ctx: '', level: 'log', message: 'first' } as LogEntry);
+      collection.add({ ctx: '', level: LoggerLevels.log, message: 'first', payload: {} } as LogEntry);
       expect(getStackData(stack, collection, {}).actions.length).toBe(1);
-      collection.add({ ctx: '', level: 'log', message: 'second' } as LogEntry);
+      collection.add({ ctx: '', level: LoggerLevels.log, message: 'second', payload: {} } as LogEntry);
       expect(getStackData(stack, collection, {}).actions.length).toBe(2);
     });
 
@@ -103,14 +103,14 @@ describe('onCriticalError', () => {
       const collection = new LimitedArray<LogEntry>();
       onCriticalError(makeStack(), collection, {}, new Error('crash'), 100);
       const item = collection.getData().find((i) => i.level === LoggerLevels.critical)!;
-      expect((item.message as { line: number }).line).toBe(100);
+      expect((item.payload as { line: number }).line).toBe(100);
     });
 
-    it('critical entry has the correct error message', () => {
+    it('critical entry message is the error string', () => {
       const collection = new LimitedArray<LogEntry>();
       onCriticalError(makeStack(), collection, {}, new Error('specific error'), 1);
       const item = collection.getData().find((i) => i.level === LoggerLevels.critical)!;
-      expect((item.message as { message: string }).message).toBe('specific error');
+      expect(item.message).toBe('specific error');
     });
 
     it('returns a Stack that includes the critical action', () => {

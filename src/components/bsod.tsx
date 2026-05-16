@@ -2,7 +2,7 @@ import { ReactElement } from 'react';
 import { createPortal } from 'react-dom';
 
 import { isCritical } from '../helpers/error-helpers';
-import { CriticalError, LoggerLevels, Stack } from '../types';
+import { LoggerLevels, Stack } from '../types';
 
 export interface BsodProps {
   count: number;
@@ -13,7 +13,10 @@ export interface BsodProps {
 const Bsod = (props: BsodProps): ReactElement => {
   const { actions } = props.stackData;
   const lastAction = actions[actions.length - 1];
-  const cError = lastAction?.level === LoggerLevels.critical ? (lastAction.message as CriticalError) : undefined;
+  const cError =
+    lastAction?.level === LoggerLevels.critical
+      ? (lastAction.payload as { message: string; stack: string[] })
+      : undefined;
 
   return createPortal(
     <div
@@ -109,20 +112,18 @@ const Bsod = (props: BsodProps): ReactElement => {
               {[...actions]
                 .reverse()
                 .filter((action) => !isCritical(action.level))
-                .map((action, index): ReactElement => {
-                  const msg = typeof action.message === 'string' ? action.message : JSON.stringify(action.message);
-
-                  return (
+                .map(
+                  (action, index): ReactElement => (
                     <li key={index}>
                       <p>
                         <strong>
                           {action.ctx ? `[${action.ctx}] ` : ''}
-                          {action.level}: {msg}
+                          {action.level}: {action.message}
                         </strong>
                       </p>
                     </li>
-                  );
-                })}
+                  ),
+                )}
             </ol>
           ) : (
             <div>Nothing actions</div>

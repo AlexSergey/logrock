@@ -126,6 +126,7 @@ describe('LoggerContainer', () => {
         ctx: '',
         level: 'log',
         message: 'unique-getstack-msg',
+        payload: {},
       });
     });
 
