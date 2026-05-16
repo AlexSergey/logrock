@@ -1,5 +1,5 @@
-import LimitedArray from './helpers/limited-array';
-import { LogEntry, LoggerInstance, LoggerLevels, Message, Stdout } from './types';
+import { LimitedArray } from './helpers/limited-array';
+import { type LogEntry, type LoggerInstance, LoggerLevels, type Message, type Stdout } from './types';
 
 class Logger {
   public enabled = true;

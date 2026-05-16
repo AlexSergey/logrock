@@ -1,6 +1,7 @@
-import { LogEntry, Stack, StackUtilProps } from '../types';
+import type { LogEntry, Stack, StackUtilProps } from '../types';
+import type { LimitedArray } from './limited-array';
+
 import { createCritical } from './error-helpers';
-import LimitedArray from './limited-array';
 import { clone } from './utils';
 
 const getStackData = (stack: Stack, stackCollection: LimitedArray<LogEntry>, props: StackUtilProps): Stack => {

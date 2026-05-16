@@ -1,5 +1,5 @@
-import { LogEntry, LoggerLevels, Stack } from '../types';
-import LimitedArray from './limited-array';
+import { type LogEntry, LoggerLevels, type Stack } from '../types';
+import { LimitedArray } from './limited-array';
 import { getStackData, onCriticalError } from './stack';
 
 const makeStack = (overrides: Partial<Stack> = {}): Stack => ({
@@ -25,8 +25,8 @@ describe('getStackData', () => {
   describe('positive cases', () => {
     it('populates actions from the collection', () => {
       const collection = new LimitedArray<LogEntry>();
-      collection.add({ ctx: '', level: LoggerLevels.log, message: 'action-a', payload: {} } as LogEntry);
-      collection.add({ ctx: '', level: LoggerLevels.info, message: 'action-b', payload: {} } as LogEntry);
+      collection.add({ ctx: '', level: LoggerLevels.log, message: 'action-a', payload: {} });
+      collection.add({ ctx: '', level: LoggerLevels.info, message: 'action-b', payload: {} });
       const result = getStackData(makeStack(), collection, {});
       expect(result.actions).toContainEqual({ ctx: '', level: LoggerLevels.log, message: 'action-a', payload: {} });
       expect(result.actions).toContainEqual({ ctx: '', level: LoggerLevels.info, message: 'action-b', payload: {} });
@@ -35,9 +35,9 @@ describe('getStackData', () => {
     it('reflects the latest state of the collection on each call', () => {
       const stack = makeStack();
       const collection = new LimitedArray<LogEntry>();
-      collection.add({ ctx: '', level: LoggerLevels.log, message: 'first', payload: {} } as LogEntry);
+      collection.add({ ctx: '', level: LoggerLevels.log, message: 'first', payload: {} });
       expect(getStackData(stack, collection, {}).actions.length).toBe(1);
-      collection.add({ ctx: '', level: LoggerLevels.log, message: 'second', payload: {} } as LogEntry);
+      collection.add({ ctx: '', level: LoggerLevels.log, message: 'second', payload: {} });
       expect(getStackData(stack, collection, {}).actions.length).toBe(2);
     });
 

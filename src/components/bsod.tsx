@@ -1,8 +1,9 @@
-import { ReactElement } from 'react';
+import type { ReactElement } from 'react';
+
 import { createPortal } from 'react-dom';
 
 import { isCritical } from '../helpers/error-helpers';
-import { LoggerLevels, Stack } from '../types';
+import { LoggerLevels, type Stack } from '../types';
 
 export interface BsodProps {
   count: number;
@@ -10,7 +11,7 @@ export interface BsodProps {
   stackData: Stack;
 }
 
-const Bsod = (props: BsodProps): ReactElement => {
+export const Bsod = (props: BsodProps): ReactElement => {
   const { actions } = props.stackData;
   const lastAction = actions[actions.length - 1];
   const cError =
@@ -134,5 +135,3 @@ const Bsod = (props: BsodProps): ReactElement => {
     document.body,
   );
 };
-
-export default Bsod;

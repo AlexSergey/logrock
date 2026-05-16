@@ -4,7 +4,7 @@ interface LimitedArrayOptions {
 
 const DEFAULT_LIMIT = 10;
 
-export default class LimitedArray<T> {
+export class LimitedArray<T> {
   public data: T[] = [];
   public limit = 0;
 

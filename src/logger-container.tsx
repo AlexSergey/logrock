@@ -1,8 +1,8 @@
 import {
   createContext,
-  FunctionComponent,
-  PropsWithChildren,
-  ReactElement,
+  type FunctionComponent,
+  type PropsWithChildren,
+  type ReactElement,
   useCallback,
   useContext,
   useEffect,
@@ -11,10 +11,11 @@ import {
   useState,
 } from 'react';
 
-import BsodComponent, { BsodProps } from './components/bsod';
+import type { LogEntry, LoggerInstance, Stack, Stdout } from './types';
+
+import { Bsod as BsodComponent, type BsodProps } from './components/bsod';
 import { getStackData, onCriticalError } from './helpers/stack';
 import { logger } from './logger';
-import { LogEntry, LoggerInstance, Stack, Stdout } from './types';
 
 interface LoggerContextValue {
   getStackData: () => Stack;
@@ -58,7 +59,7 @@ interface StackRef {
   traceId: number | string | undefined;
 }
 
-export default function LoggerContainer({
+export const LoggerContainer = ({
   bsod,
   children,
   enabled = true,
@@ -68,7 +69,7 @@ export default function LoggerContainer({
   onPrepareStack,
   stdout,
   traceId,
-}: PropsWithChildren<LoggerContainerProps>): ReactElement {
+}: PropsWithChildren<LoggerContainerProps>): ReactElement => {
   const [bsodVisible, setBsodVisible] = useState(false);
   const hasCriticalError = useRef(false);
 
@@ -95,7 +96,7 @@ export default function LoggerContainer({
   );
 
   const getStackDataFn = useCallback(
-    (): Stack => getStackData(stack.current as Stack, logger.getStackCollection(), buildProps()),
+    (): Stack => getStackData(stack.current, logger.getStackCollection(), buildProps()),
     [buildProps],
   );
 
@@ -118,13 +119,7 @@ export default function LoggerContainer({
     const triggerCritical = (error: Error, lineno: number): void => {
       if (hasCriticalError.current) return;
       hasCriticalError.current = true;
-      const stackData = onCriticalError(
-        stack.current as Stack,
-        logger.getStackCollection(),
-        buildProps(),
-        error,
-        lineno,
-      );
+      const stackData = onCriticalError(stack.current, logger.getStackCollection(), buildProps(), error, lineno);
       handleError(stackData);
       setBsodVisible(true);
     };
@@ -165,4 +160,4 @@ export default function LoggerContainer({
       )}
     </LoggerContext.Provider>
   );
-}
+};

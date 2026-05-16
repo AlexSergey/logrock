@@ -1,4 +1,5 @@
-import { LogEntry, Stack } from '../types';
+import type { LogEntry, Stack } from '../types';
+
 import { clone } from './utils';
 
 const makeStack = (): Stack => ({

@@ -1,4 +1,4 @@
-import LimitedArray from '../helpers/limited-array';
+import type { LimitedArray } from '../helpers/limited-array';
 
 export enum LoggerLevels {
   critical = 'critical',

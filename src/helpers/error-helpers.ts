@@ -1,4 +1,4 @@
-import { LogEntry, LoggerLevels } from '../types';
+import { type LogEntry, LoggerLevels } from '../types';
 
 const CRITICAL = 'critical';
 

@@ -1,4 +1,4 @@
-import LimitedArray from './limited-array';
+import { LimitedArray } from './limited-array';
 
 describe('LimitedArray', () => {
   describe('negative cases', () => {

@@ -1,10 +1,12 @@
-import { act, render, renderHook, screen } from '@testing-library/react';
-import { PropsWithChildren, ReactElement } from 'react';
+import type { PropsWithChildren, ReactElement } from 'react';
 
-import { BsodProps } from './components/bsod';
+import { act, render, renderHook, screen } from '@testing-library/react';
+
+import type { BsodProps } from './components/bsod';
+
 import { logger } from './logger';
-import LoggerContainer, { useLoggerApi } from './logger-container';
-import { LoggerLevels, Stack } from './types';
+import { LoggerContainer, useLoggerApi } from './logger-container';
+import { LoggerLevels, type Stack } from './types';
 
 interface WrapperProps {
   onError?: (s: Stack) => void;

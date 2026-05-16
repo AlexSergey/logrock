@@ -1,6 +1,6 @@
 {
   "name": "logrock",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "private": false,
   "description": "This module can help you build error tracking & crash reporting system for your React application.",
   "keywords": [
@@ -27,7 +27,8 @@
   "exports": {
     ".": {
       "import": "./lib/esm/index.mjs",
-      "require": "./lib/cjs/index.cjs"
+      "require": "./lib/cjs/index.cjs",
+      "types": "./dist/types/index.d.ts"
     }
   },
   "main": "./lib/cjs/index.cjs",
@@ -48,10 +49,10 @@
     "test:watch": "node scripts.tests.js --watch"
   },
   "devDependencies": {
-    "@rockpack/codestyle": "7.2.0",
-    "@rockpack/compiler": "7.2.0",
-    "@rockpack/tester": "7.2.0",
-    "@rockpack/tsconfig": "7.2.0",
+    "@rockpack/codestyle": "8.0.0-next.1",
+    "@rockpack/compiler": "8.0.0-next.1",
+    "@rockpack/tester": "8.0.0-next.1",
+    "@rockpack/tsconfig": "8.0.0-next.1",
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "16.3.2",
     "@types/jest": "^29.4.0",

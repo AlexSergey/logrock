@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 
-import { LogEntry, LoggerLevels, Stack } from '../types';
-import Bsod from './bsod';
+import { type LogEntry, LoggerLevels, type Stack } from '../types';
+import { Bsod } from './bsod';
 
 const createStack = (actions: LogEntry[]): Stack => ({
   actions,
