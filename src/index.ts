@@ -1,4 +1,4 @@
-export type { LoggerInstance, LoggerLevels, Stack } from './types';
+export { type LoggerInstance, LoggerLevels, type Stack, type Stdout } from './types';
 
 import { logger } from './logger';
 import { LoggerContainer, useLoggerApi } from './logger-container';
