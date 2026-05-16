@@ -40,15 +40,15 @@ export const useLoggerApi = (): LoggerApiReturn => {
 };
 
 interface LoggerContainerProps {
-  active?: boolean;
   bsod?: false | FunctionComponent<BsodProps>;
+  enabled?: boolean;
   env?: string;
   limit?: number;
   logger?: LoggerInstance;
   onError?: (stack: Stack) => void;
   onPrepareStack?: (stack: Stack) => Stack;
   stdout?: Stdout;
-  traceID?: number | string;
+  traceId?: number | string;
 }
 
 interface StackRef {
@@ -59,15 +59,15 @@ interface StackRef {
 }
 
 export default function LoggerContainer({
-  active = true,
   bsod,
   children,
+  enabled = true,
   env = '',
   limit = 25,
   onError: onErrorCallback,
   onPrepareStack,
   stdout,
-  traceID,
+  traceId,
 }: PropsWithChildren<LoggerContainerProps>): ReactElement {
   const [bsodVisible, setBsodVisible] = useState(false);
   const hasCriticalError = useRef(false);
@@ -76,16 +76,16 @@ export default function LoggerContainer({
     actions: logger.getStackCollection().data,
     env,
     ...(typeof onPrepareStack === 'function' ? { onPrepareStack } : {}),
-    traceId: typeof traceID === 'string' || typeof traceID === 'number' ? traceID : undefined,
+    traceId: typeof traceId === 'string' || typeof traceId === 'number' ? traceId : undefined,
   });
 
   useEffect(() => {
-    logger.setUp({ active });
+    logger.setUp({ enabled });
     logger.getStackCollection().setLimit(limit);
     if (typeof stdout === 'function') {
       logger.setUp({ stdout });
     }
-  }, [active, limit, stdout]);
+  }, [enabled, limit, stdout]);
 
   const buildProps = useCallback(
     () => ({
@@ -113,29 +113,41 @@ export default function LoggerContainer({
   }, []);
 
   useEffect(() => {
-    if (!active || isBackend()) return;
+    if (!enabled || isBackend()) return;
 
-    const onError = (e: ErrorEvent): void => {
-      e.preventDefault();
+    const triggerCritical = (error: Error, lineno: number): void => {
       if (hasCriticalError.current) return;
       hasCriticalError.current = true;
       const stackData = onCriticalError(
         stack.current as Stack,
         logger.getStackCollection(),
         buildProps(),
-        e.error as Error,
-        e.lineno,
+        error,
+        lineno,
       );
       handleError(stackData);
       setBsodVisible(true);
     };
 
+    const onError = (e: ErrorEvent): void => {
+      e.preventDefault();
+      triggerCritical(e.error as Error, e.lineno);
+    };
+
+    const onUnhandledRejection = (e: PromiseRejectionEvent): void => {
+      e.preventDefault();
+      const error = e.reason instanceof Error ? e.reason : new Error(String(e.reason ?? 'Unhandled promise rejection'));
+      triggerCritical(error, 0);
+    };
+
     window.addEventListener('error', onError);
+    window.addEventListener('unhandledrejection', onUnhandledRejection);
 
     return (): void => {
       window.removeEventListener('error', onError);
+      window.removeEventListener('unhandledrejection', onUnhandledRejection);
     };
-  }, [active, buildProps, handleError]);
+  }, [enabled, buildProps, handleError]);
 
   const contextValue = useMemo(
     () => ({ getStackData: getStackDataFn, onError: handleError }),

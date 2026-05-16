@@ -15,6 +15,7 @@
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [Logging](#logging)
+- [Automatic Error Capture](#automatic-error-capture)
 - [Reading the Stack](#reading-the-stack)
 - [Custom BSOD](#custom-bsod)
 - [Properties](#properties)
@@ -50,7 +51,7 @@ function App() {
 export default function Root() {
   return (
     <LoggerContainer
-      traceID={window.sessionID}
+      traceId={window.sessionID}
       env="development"
       limit={75}
       stdout={(level, message, ctx, important) => {
@@ -126,6 +127,24 @@ export default function Toggle() {
 }
 ```
 
+## Automatic Error Capture
+
+`<LoggerContainer>` automatically listens for two global error events:
+
+| Event | Trigger |
+| --- | --- |
+| `window error` | Uncaught JavaScript exception (`throw new Error(...)`) |
+| `window unhandledrejection` | Unhandled promise rejection (`Promise.reject(...)` without `.catch()`) |
+
+When either event fires, `LoggerContainer`:
+1. Records a `critical`-level entry (with `{ line, stack }` in `payload`) into the action stack.
+2. Calls `onError` with the full stack snapshot.
+3. Shows the BSOD overlay (unless `bsod={false}`).
+
+Only the first critical event per `<LoggerContainer>` mount is handled — subsequent errors are ignored while the overlay is visible.
+
+---
+
 When a critical error occurs the built-in BSOD overlay displays every recorded action — including each entry's `ctx` tag — so you can immediately see the sequence of events that led to the crash:
 
 <p align="right">
@@ -185,9 +204,9 @@ function MyErrorScreen({ count, stackData, onClose }: BsodProps) {
 
 | Prop | Type | Default | Description                                                                                                                                                               |
 | --- | --- | --- |---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `active` | `boolean` | `true` | Enable or disable logging and the error listener. Disable during tests to keep them isolated.                                                                             |
+| `enabled` | `boolean` | `true` | Enable or disable logging and the error listener. Disable during tests to keep them isolated.                                                                             |
 | `bsod` | `false \| FunctionComponent<BsodProps>` | built-in | Pass `false` to suppress the overlay entirely. Pass a component to replace the default BSOD.                                                                              |
-| `traceID` | `string \| number` | — | Identifier stored as `traceId` in the stack. Use it to correlate the stack with a backend request or session.                                                             |
+| `traceId` | `string \| number` | — | Identifier stored as `traceId` in the stack. Use it to correlate the stack with a backend request or session.                                                             |
 | `env` | `string` | `''` | Environment label stored in the stack (e.g. `'production'`, `'development'`).                                                                                             |
 | `limit` | `number` | `25` | Maximum number of actions kept in the stack. Oldest entries are dropped when the limit is exceeded.                                                                       |
 | `onError` | `(stack: Stack) => void` | — | Called when a critical error is captured. Use this to send the stack to your backend or error tracker.                                                                    |
@@ -223,7 +242,7 @@ interface LogEntry {
 interface Stack {
   actions: LogEntry[];              // recorded log entries (capped at limit)
   env: string;                      // value passed via the env prop
-  traceId: string | number | undefined; // value passed via the traceID prop
+  traceId: string | number | undefined; // value passed via the traceId prop
 }
 ```
 

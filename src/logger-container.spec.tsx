@@ -21,16 +21,23 @@ const fireWindowError = (message = 'test error', lineno = 1): void => {
   });
 };
 
+const fireUnhandledRejection = (reason: unknown = new Error('promise error')): void => {
+  act(() => {
+    window.dispatchEvent(new PromiseRejectionEvent('unhandledrejection', { promise: Promise.resolve(), reason }));
+  });
+};
+
 afterEach(() => {
-  logger.setUp({ active: true });
+  logger.setUp({ enabled: true });
+  logger.getStackCollection().reset();
 });
 
 describe('LoggerContainer', () => {
   describe('negative cases', () => {
-    it('does not call stdout when logger is inactive', () => {
+    it('does not call stdout when logger is disabled', () => {
       const stdout = jest.fn();
       render(
-        <LoggerContainer active={false} stdout={stdout}>
+        <LoggerContainer enabled={false} stdout={stdout}>
           <div />
         </LoggerContainer>,
       );
@@ -60,6 +67,30 @@ describe('LoggerContainer', () => {
       expect(onError).toHaveBeenCalledTimes(1);
     });
 
+    it('handles only the first unhandledrejection — subsequent rejections are ignored', () => {
+      const onError = jest.fn();
+      render(
+        <LoggerContainer onError={onError}>
+          <div />
+        </LoggerContainer>,
+      );
+      fireUnhandledRejection(new Error('first'));
+      fireUnhandledRejection(new Error('second'));
+      expect(onError).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not attach listeners when enabled is false', () => {
+      const addSpy = jest.spyOn(window, 'addEventListener');
+      render(
+        <LoggerContainer enabled={false}>
+          <div />
+        </LoggerContainer>,
+      );
+      expect(addSpy).not.toHaveBeenCalledWith('error', expect.any(Function));
+      expect(addSpy).not.toHaveBeenCalledWith('unhandledrejection', expect.any(Function));
+      addSpy.mockRestore();
+    });
+
     it('does not throw when triggerError is called without an onError prop', () => {
       const { result } = renderHook(() => useLoggerApi(), { wrapper: createWrapper() });
       expect(() => {
@@ -75,22 +106,11 @@ describe('LoggerContainer', () => {
       consoleSpy.mockRestore();
     });
 
-    it('leaves traceId undefined when traceID prop is omitted', () => {
+    it('leaves traceId undefined when traceId prop is omitted', () => {
       const { result } = renderHook(() => useLoggerApi(), {
         wrapper: ({ children }: PropsWithChildren) => <LoggerContainer>{children}</LoggerContainer>,
       });
       expect(result.current.getStackData().traceId).toBeUndefined();
-    });
-
-    it('does not attach error listener when active is false', () => {
-      const addSpy = jest.spyOn(window, 'addEventListener');
-      render(
-        <LoggerContainer active={false}>
-          <div />
-        </LoggerContainer>,
-      );
-      expect(addSpy).not.toHaveBeenCalledWith('error', expect.any(Function));
-      addSpy.mockRestore();
     });
   });
 
@@ -141,16 +161,16 @@ describe('LoggerContainer', () => {
       expect(firstCall[0]).toHaveProperty('actions');
     });
 
-    it('sets traceId when traceID prop is a string', () => {
+    it('sets traceId when traceId prop is a string', () => {
       const { result } = renderHook(() => useLoggerApi(), {
-        wrapper: ({ children }: PropsWithChildren) => <LoggerContainer traceID="my-trace">{children}</LoggerContainer>,
+        wrapper: ({ children }: PropsWithChildren) => <LoggerContainer traceId="my-trace">{children}</LoggerContainer>,
       });
       expect(result.current.getStackData().traceId).toBe('my-trace');
     });
 
-    it('sets traceId when traceID prop is a number', () => {
+    it('sets traceId when traceId prop is a number', () => {
       const { result } = renderHook(() => useLoggerApi(), {
-        wrapper: ({ children }: PropsWithChildren) => <LoggerContainer traceID={42}>{children}</LoggerContainer>,
+        wrapper: ({ children }: PropsWithChildren) => <LoggerContainer traceId={42}>{children}</LoggerContainer>,
       });
       expect(result.current.getStackData().traceId).toBe(42);
     });
@@ -211,6 +231,55 @@ describe('LoggerContainer', () => {
       expect(onError).toHaveBeenCalledTimes(1);
       const [[stackData]] = onError.mock.calls as [[Stack]];
       expect(stackData.actions.some((a) => a.level === LoggerLevels.critical)).toBe(true);
+    });
+
+    it('renders BSOD after an unhandledrejection event', () => {
+      render(
+        <LoggerContainer>
+          <div />
+        </LoggerContainer>,
+      );
+      fireUnhandledRejection(new Error('async fail'));
+      expect(screen.getByText('Actions:')).toBeInTheDocument();
+    });
+
+    it('calls onError with a critical entry on unhandledrejection', () => {
+      const onError = jest.fn();
+      render(
+        <LoggerContainer onError={onError}>
+          <div />
+        </LoggerContainer>,
+      );
+      fireUnhandledRejection(new Error('async fail'));
+      expect(onError).toHaveBeenCalledTimes(1);
+      const [[stackData]] = onError.mock.calls as [[Stack]];
+      expect(stackData.actions.some((a) => a.level === LoggerLevels.critical)).toBe(true);
+    });
+
+    it('uses the rejection reason message as the critical entry message', () => {
+      const onError = jest.fn();
+      render(
+        <LoggerContainer onError={onError}>
+          <div />
+        </LoggerContainer>,
+      );
+      fireUnhandledRejection(new Error('specific async error'));
+      const [[stackData]] = onError.mock.calls as [[Stack]];
+      const criticalEntry = stackData.actions.find((a) => a.level === LoggerLevels.critical)!;
+      expect(criticalEntry.message).toBe('specific async error');
+    });
+
+    it('converts a non-Error rejection reason to an Error message', () => {
+      const onError = jest.fn();
+      render(
+        <LoggerContainer onError={onError}>
+          <div />
+        </LoggerContainer>,
+      );
+      fireUnhandledRejection('plain string reason');
+      const [[stackData]] = onError.mock.calls as [[Stack]];
+      const criticalEntry = stackData.actions.find((a) => a.level === LoggerLevels.critical)!;
+      expect(criticalEntry.message).toBe('plain string reason');
     });
 
     it('renders the built-in BSOD by default', () => {

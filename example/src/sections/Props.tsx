@@ -9,7 +9,7 @@ function LoggerContainerProps() {
       <table className="table">
         <tbody>
           <tr>
-            <th>active</th>
+            <th>enabled</th>
             <td>Boolean[true]</td>
             <td>Turn on/off logger system. You can turn it off in the test environment.</td>
           </tr>
@@ -22,7 +22,7 @@ function LoggerContainerProps() {
             </td>
           </tr>
           <tr>
-            <th>traceID</th>
+            <th>traceId</th>
             <td>string | number</td>
             <td>
               Identifier stored as <code>traceId</code> in the stack. Use it to correlate errors with a backend request

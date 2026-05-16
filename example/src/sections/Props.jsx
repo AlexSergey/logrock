@@ -8,7 +8,7 @@ const LoggerContainerProps = () => {
             <tbody>
                 <tr>
                     <th>
-                        active
+                        enabled
                     </th>
                     <td>
                         Boolean[true]
@@ -30,7 +30,7 @@ const LoggerContainerProps = () => {
                 </tr>
                 <tr>
                     <th>
-                        traceID
+                        traceId
                     </th>
                     <td>
                         string | number

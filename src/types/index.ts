@@ -28,7 +28,7 @@ export interface LoggerInstance {
 }
 
 export interface LoggerSetupOptions {
-  active?: boolean;
+  enabled?: boolean;
   stdout?: Stdout;
 }
 

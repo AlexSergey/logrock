@@ -94,6 +94,15 @@ function LoggerDemo() {
                 >
                   FATAL ERROR!
                 </button>
+                <br />
+                <button
+                  className="btn btn-warning mb-2"
+                  onClick={() => {
+                    Promise.reject(new Error('Unhandled Promise Rejection'));
+                  }}
+                >
+                  Unhandled Rejection
+                </button>
               </th>
             </tr>
           </tbody>
@@ -131,7 +140,7 @@ export default function Examples() {
         !
       </p>
       <LoggerContainer
-        traceID={sessionID}
+        traceId={sessionID}
         env={typeof window !== 'undefined' ? window.location.origin : ''}
         limit={75}
         stdout={showMessage}

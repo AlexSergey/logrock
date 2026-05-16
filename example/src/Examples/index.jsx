@@ -39,7 +39,7 @@ export default function () {
         code <a href="https://github.com/AlexSergey/logrock/blob/master/example/src/Examples/index.jsx" target="_blank">here</a>!
       </p>
       <LoggerContainer
-        traceID={global.sessionID}
+        traceId={global.sessionID}
         env={typeof window !== 'undefined' ? window.location.origin : ''}
         limit={75}
         stdout={showMessage}
@@ -147,6 +147,15 @@ export default function () {
                         <h3>onError callback</h3>
                         <button className="btn btn-primary mb-2" onClick={() => blabla()}>
                           FATAL ERROR!
+                        </button>
+                        <br />
+                        <button
+                          className="btn btn-warning mb-2"
+                          onClick={() => {
+                            Promise.reject(new Error('Unhandled Promise Rejection'));
+                          }}
+                        >
+                          Unhandled Rejection
                         </button>
                       </th>
                     </tr>

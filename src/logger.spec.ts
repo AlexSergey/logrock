@@ -2,9 +2,9 @@ import { createLogger } from './logger';
 
 describe('logger', () => {
   describe('negative cases', () => {
-    it('does not add to the stack when inactive', () => {
+    it('does not add to the stack when disabled', () => {
       const logger = createLogger();
-      logger.setUp({ active: false });
+      logger.setUp({ enabled: false });
       const before = logger.getStackCollection().getData().length;
       (['log', 'info', 'debug', 'warn', 'error'] as const).forEach((method) => {
         logger[method](`test ${method}`);
@@ -12,25 +12,25 @@ describe('logger', () => {
       expect(logger.getStackCollection().getData().length).toBe(before);
     });
 
-    it('does not call stdout when inactive', () => {
+    it('does not call stdout when disabled', () => {
       const logger = createLogger();
       const stdout = jest.fn();
-      logger.setUp({ active: false, stdout });
+      logger.setUp({ enabled: false, stdout });
       logger.log('test');
       expect(stdout).not.toHaveBeenCalled();
     });
 
-    it('does not increment the counter when inactive', () => {
+    it('does not increment the counter when disabled', () => {
       const logger = createLogger();
-      logger.setUp({ active: false });
+      logger.setUp({ enabled: false });
       const before = logger.getCounter();
       logger.log('test');
       expect(logger.getCounter()).toBe(before);
     });
 
-    it('does not change active state when setUp receives no active key', () => {
+    it('does not change enabled state when setUp receives no enabled key', () => {
       const logger = createLogger();
-      logger.setUp({ active: true });
+      logger.setUp({ enabled: true });
       logger.setUp({});
       const before = logger.getCounter();
       logger.log('still active');
@@ -122,11 +122,11 @@ describe('logger', () => {
       expect(logger.getCounter()).toBe(3);
     });
 
-    it('re-enables logging after setUp({ active: true })', () => {
+    it('re-enables logging after setUp({ enabled: true })', () => {
       const logger = createLogger();
-      logger.setUp({ active: false });
+      logger.setUp({ enabled: false });
       logger.log('ignored');
-      logger.setUp({ active: true });
+      logger.setUp({ enabled: true });
       logger.log('logged');
       const items = logger.getStackCollection().getData();
       expect(items).toContainEqual({ ctx: '', level: 'log', message: 'logged', payload: {} });

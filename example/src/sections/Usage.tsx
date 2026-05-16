@@ -41,7 +41,7 @@ export default function Root() {
     }, []);
 
     return <LoggerContainer
-           traceID={window.sessionID}
+           traceId={window.sessionID}
            env={window.location.origin}
            limit={75} // stack limit. After overflowing the first item will be removed
            stdout={showMessage} // show logs for your users
