@@ -1,3 +1,4 @@
+import './types/global.declarations';
 import 'bootstrap/dist/css/bootstrap.css';
 import { createRoot } from 'react-dom/client';
 import './assets/example.css';

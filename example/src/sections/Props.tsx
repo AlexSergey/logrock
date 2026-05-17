@@ -14,12 +14,9 @@ function LoggerContainerProps() {
             <td>Turn on/off logger system. You can turn it off in the test environment.</td>
           </tr>
           <tr>
-            <th>bsod</th>
-            <td>false | Component</td>
-            <td>
-              Pass <code>false</code> to suppress the BSOD overlay entirely. Pass a component to replace the default
-              overlay with your own.
-            </td>
+            <th>bsodComponent</th>
+            <td>Component</td>
+            <td>Pass a custom component to replace the default BSOD overlay. Omit to use the built-in one.</td>
           </tr>
           <tr>
             <th>traceId</th>
@@ -48,6 +45,14 @@ function LoggerContainerProps() {
             <td>
               window.onerror callback. If an error happens it will call with all stack data. You can send it to
               ElasticSearch or Backend or save it to file for analyzing and understanding user&apos;s actions.
+            </td>
+          </tr>
+          <tr>
+            <th>showBsod</th>
+            <td>Boolean[true]</td>
+            <td>
+              Show or hide the BSOD overlay independently of <code>onError</code>. Set to <code>false</code> to suppress
+              the overlay while still receiving error reports — useful for staging environments or custom error UIs.
             </td>
           </tr>
           <tr>
@@ -156,7 +161,25 @@ logger.error("Request failed", "ApiClient");`}
 }
 
 // Stack — the full snapshot passed to onError / returned by getStackData
-// { actions: LogEntry[], env: string, traceId: string | number | undefined }`}
+// {
+//   actions: LogEntry[],
+//   env: string,
+//   timestamp: string,              // ISO 8601 — when the snapshot was taken
+//   metadata: {
+//     browser: string,              // e.g. "Chrome"
+//     browserVersion: string,       // e.g. "120.0.6099.71"
+//     os: string,                   // e.g. "Windows 10.0"
+//     viewport: string,             // e.g. "1512x982"
+//     screen: string,               // e.g. "2560x1440"
+//     devicePixelRatio: number,     // e.g. 2
+//     language: string,             // e.g. "en-US"
+//     timezone: string,             // e.g. "Europe/Zagreb"
+//     mobile: boolean,
+//     url: string,                  // pathname, e.g. "/checkout/payment"
+//     fullUrl: string,              // e.g. "https://app.com/checkout/payment?id=123"
+//   },
+//   traceId: string | number | undefined
+// }`}
       />
     </>
   );

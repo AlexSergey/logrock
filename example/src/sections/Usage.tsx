@@ -50,8 +50,9 @@ export default function Root() {
                sendToServer(stackData);
            }}
            onPrepareStack={stack => {
-               // Middleware — add extra data before onError is called
-               stack.language = window.navigator.language;
+               // metadata already has browser, os, viewport, screen, language, mobile, timezone, url
+               // use onPrepareStack only for business-specific context
+               stack.userId = getCurrentUserId();
                return stack;
            }}>
                <App />

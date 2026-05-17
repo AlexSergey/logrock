@@ -1,11 +1,14 @@
 import type { LogEntry, Stack, StackUtilProps } from '../types';
 import type { LimitedArray } from './limited-array';
 
+import { collectMetadata } from './collect-metadata';
 import { createCritical } from './error-helpers';
 import { clone } from './utils';
 
 const getStackData = (stack: Stack, stackCollection: LimitedArray<LogEntry>, props: StackUtilProps): Stack => {
   stack.actions = stackCollection.getData();
+  stack.timestamp = new Date().toISOString();
+  stack.metadata = collectMetadata();
 
   if (typeof props.onPrepareStack === 'function') {
     props.onPrepareStack(stack);

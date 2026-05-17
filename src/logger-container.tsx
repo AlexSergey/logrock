@@ -11,9 +11,9 @@ import {
   useState,
 } from 'react';
 
-import type { LogEntry, LoggerInstance, Stack, Stdout } from './types';
+import type { LoggerInstance, Stack, Stdout } from './types';
 
-import { Bsod as BsodComponent, type BsodProps } from './components/bsod';
+import { type BsodProps, Bsod as DefaultBsod } from './components/bsod';
 import { getStackData, onCriticalError } from './helpers/stack';
 import { logger } from './logger';
 
@@ -41,42 +41,50 @@ export const useLoggerApi = (): LoggerApiReturn => {
 };
 
 interface LoggerContainerProps {
-  bsod?: false | FunctionComponent<BsodProps>;
+  bsodComponent?: FunctionComponent<BsodProps>;
   enabled?: boolean;
   env?: string;
   limit?: number;
   logger?: LoggerInstance;
   onError?: (stack: Stack) => void;
   onPrepareStack?: (stack: Stack) => Stack;
+  showBsod?: boolean;
   stdout?: Stdout;
   traceId?: number | string;
 }
 
-interface StackRef {
-  actions: LogEntry[];
-  env: string;
-  onPrepareStack?: (s: Stack) => Stack;
-  traceId: number | string | undefined;
-}
-
 export const LoggerContainer = ({
-  bsod,
+  bsodComponent,
   children,
   enabled = true,
   env = '',
   limit = 25,
   onError: onErrorCallback,
   onPrepareStack,
+  showBsod = true,
   stdout,
   traceId,
 }: PropsWithChildren<LoggerContainerProps>): ReactElement => {
   const [bsodVisible, setBsodVisible] = useState(false);
   const hasCriticalError = useRef(false);
 
-  const stack = useRef<StackRef>({
+  const stack = useRef<Stack>({
     actions: logger.getStackCollection().data,
     env,
-    ...(typeof onPrepareStack === 'function' ? { onPrepareStack } : {}),
+    metadata: {
+      browser: '',
+      browserVersion: '',
+      devicePixelRatio: 1,
+      fullUrl: '',
+      language: '',
+      mobile: false,
+      os: '',
+      screen: '',
+      timezone: '',
+      url: '',
+      viewport: '',
+    },
+    timestamp: '',
     traceId: typeof traceId === 'string' || typeof traceId === 'number' ? traceId : undefined,
   });
 
@@ -149,13 +157,12 @@ export const LoggerContainer = ({
     [getStackDataFn, handleError],
   );
 
-  const bsodEnabled = bsod !== false;
-  const BsodToRender = typeof bsod === 'function' ? bsod : BsodComponent;
+  const BsodToRender = bsodComponent ?? DefaultBsod;
 
   return (
     <LoggerContext.Provider value={contextValue}>
       {children}
-      {bsodEnabled && bsodVisible && (
+      {showBsod && bsodVisible && (
         <BsodToRender count={logger.getCounter()} onClose={closeBsod} stackData={getStackDataFn()} />
       )}
     </LoggerContext.Provider>

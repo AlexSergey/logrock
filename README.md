@@ -63,8 +63,9 @@ export default function Root() {
       }}
       onPrepareStack={(stack) => ({
         ...stack,
-        // attach any extra context before the stack is sent
-        language: window.navigator.language,
+        // attach any custom context before the stack is sent
+        // stack.metadata already contains browser, browserVersion and os
+        extraData: 'some-data'
       })}
     >
       <App />
@@ -139,7 +140,7 @@ export default function Toggle() {
 When either event fires, `LoggerContainer`:
 1. Records a `critical`-level entry (with `{ line, stack }` in `payload`) into the action stack.
 2. Calls `onError` with the full stack snapshot.
-3. Shows the BSOD overlay (unless `bsod={false}`).
+3. Shows the BSOD overlay (unless `showBsod={false}`).
 
 Only the first critical event per `<LoggerContainer>` mount is handled — subsequent errors are ignored while the overlay is visible.
 
@@ -178,7 +179,7 @@ function DebugPanel() {
 
 ## Custom BSOD
 
-Replace the default overlay with your own component by passing it to the `bsod` prop. Your component receives the same `BsodProps` as the built-in one:
+Replace the default overlay with your own component by passing it to the `bsodComponent` prop. Your component receives the same `BsodProps` as the built-in one:
 
 ```tsx
 import { BsodProps, LoggerContainer } from 'logrock';
@@ -193,7 +194,7 @@ function MyErrorScreen({ count, stackData, onClose }: BsodProps) {
   );
 }
 
-<LoggerContainer bsod={MyErrorScreen}>
+<LoggerContainer bsodComponent={MyErrorScreen}>
   <App />
 </LoggerContainer>
 ```
@@ -205,7 +206,8 @@ function MyErrorScreen({ count, stackData, onClose }: BsodProps) {
 | Prop | Type | Default | Description                                                                                                                                                               |
 | --- | --- | --- |---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `enabled` | `boolean` | `true` | Enable or disable logging and the error listener. Disable during tests to keep them isolated.                                                                             |
-| `bsod` | `false \| FunctionComponent<BsodProps>` | built-in | Pass `false` to suppress the overlay entirely. Pass a component to replace the default BSOD.                                                                              |
+| `bsodComponent` | `FunctionComponent<BsodProps>` | built-in | Pass a custom component to replace the default BSOD overlay. Omit to use the built-in one.                                                                               |
+| `showBsod` | `boolean` | `true` | Show or hide the BSOD overlay without affecting `onError`. Set to `false` to suppress the overlay while still receiving error reports.                                   |
 | `traceId` | `string \| number` | — | Identifier stored as `traceId` in the stack. Use it to correlate the stack with a backend request or session.                                                             |
 | `env` | `string` | `''` | Environment label stored in the stack (e.g. `'production'`, `'development'`).                                                                                             |
 | `limit` | `number` | `25` | Maximum number of actions kept in the stack. Oldest entries are dropped when the limit is exceeded.                                                                       |
@@ -238,10 +240,27 @@ interface LogEntry {
   payload: Record<string, unknown>; // {} for regular entries; { line, stack } for critical
 }
 
+// StackMetadata — browser environment captured at snapshot time
+type StackMetadata = {
+  browser: string;         // e.g. 'Chrome', 'Firefox', 'Safari', 'Edge'
+  browserVersion: string;  // e.g. '120.0.6099.71'
+  os: string;              // e.g. 'Windows 10.0', 'macOS 14.1', 'Android 13', 'iOS 17.0'
+  viewport: string;        // inner window size, e.g. '1512x982'
+  screen: string;          // physical screen size, e.g. '2560x1440'
+  devicePixelRatio: number;// e.g. 2 for Retina displays
+  language: string;        // e.g. 'en-US'
+  timezone: string;        // e.g. 'Europe/Zagreb'
+  mobile: boolean;         // true when touch device or mobile UA is detected
+  url: string;             // window.location.pathname, e.g. '/checkout/payment'
+  fullUrl: string;         // window.location.href, e.g. 'https://app.com/checkout/payment?id=123'
+};
+
 // Stack — the full snapshot sent to onError / returned by getStackData
 interface Stack {
-  actions: LogEntry[];              // recorded log entries (capped at limit)
-  env: string;                      // value passed via the env prop
+  actions: LogEntry[];                   // recorded log entries (capped at limit)
+  env: string;                           // value passed via the env prop
+  metadata: StackMetadata;              // browser/OS/device context collected at snapshot time
+  timestamp: string;                    // ISO 8601 timestamp of when the snapshot was taken
   traceId: string | number | undefined; // value passed via the traceId prop
 }
 ```

@@ -1,10 +1,24 @@
-import { type LogEntry, LoggerLevels, type Stack } from '../types';
+import { type LogEntry, LoggerLevels, type Stack, type StackMetadata } from '../types';
 import { LimitedArray } from './limited-array';
 import { getStackData, onCriticalError } from './stack';
 
 const makeStack = (overrides: Partial<Stack> = {}): Stack => ({
   actions: [],
   env: '',
+  metadata: {
+    browser: '',
+    browserVersion: '',
+    devicePixelRatio: 1,
+    fullUrl: '',
+    language: '',
+    mobile: false,
+    os: '',
+    screen: '',
+    timezone: '',
+    url: '',
+    viewport: '',
+  },
+  timestamp: '',
   traceId: undefined,
   ...overrides,
 });
@@ -63,6 +77,45 @@ describe('getStackData', () => {
     it('preserves env in the returned clone', () => {
       const result = getStackData(makeStack({ env: 'production' }), new LimitedArray<LogEntry>(), {});
       expect(result.env).toBe('production');
+    });
+
+    it('sets timestamp as an ISO 8601 string', () => {
+      const before = Date.now();
+      const result = getStackData(makeStack(), new LimitedArray<LogEntry>(), {});
+      const after = Date.now();
+      expect(typeof result.timestamp).toBe('string');
+      const ts = Date.parse(result.timestamp);
+      expect(ts).toBeGreaterThanOrEqual(before);
+      expect(ts).toBeLessThanOrEqual(after);
+    });
+
+    it('sets a fresh timestamp on each call', () => {
+      const stack = makeStack();
+      const first = getStackData(stack, new LimitedArray<LogEntry>(), {}).timestamp;
+      const second = getStackData(stack, new LimitedArray<LogEntry>(), {}).timestamp;
+      // timestamps are strings; they may be equal if called within the same ms, but never go backwards
+      expect(Date.parse(second)).toBeGreaterThanOrEqual(Date.parse(first));
+    });
+
+    it('sets metadata with all required keys of correct types', () => {
+      const result = getStackData(makeStack(), new LimitedArray<LogEntry>(), {});
+      const stringKeys: (keyof StackMetadata)[] = [
+        'browser',
+        'browserVersion',
+        'fullUrl',
+        'language',
+        'os',
+        'screen',
+        'timezone',
+        'url',
+        'viewport',
+      ];
+      for (const key of stringKeys) {
+        expect(result.metadata).toHaveProperty(key);
+        expect(typeof result.metadata[key]).toBe('string');
+      }
+      expect(typeof result.metadata.devicePixelRatio).toBe('number');
+      expect(typeof result.metadata.mobile).toBe('boolean');
     });
   });
 });

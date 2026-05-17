@@ -1,12 +1,7 @@
 import { useCallback } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
-import dayjs from 'dayjs';
-import platform from 'platform';
-import isMobile from 'is-mobile';
-import logger, { LoggerContainer, Stack, useLoggerApi } from '../../../src';
+import logger, { LoggerContainer, type Stack, useLoggerApi } from '../../../src';
 import 'react-toastify/dist/ReactToastify.css';
-
-const { name, os, version } = platform;
 
 const sessionID = `sessionid-${Math.random().toString(36).substring(3, 9)}`;
 
@@ -143,40 +138,16 @@ export default function Examples() {
         traceId={sessionID}
         env={typeof window !== 'undefined' ? window.location.origin : ''}
         limit={75}
+        showBsod={true}
         stdout={showMessage}
         onError={(stackData) => {
           console.log(stackData);
         }}
         onPrepareStack={(stack) => {
-          const BROWSER = `${name ?? ''} ${version ?? ''}`;
-          const OS = `${os?.family ?? ''} ${os?.architecture ?? ''}-bit`;
-
-          const screen = window.screen
-            ? {
-                width: window.screen.width,
-                height: window.screen.height,
-                colorDepth: window.screen.colorDepth,
-                pixelDepth: window.screen.pixelDepth,
-                ...(window.screen.orientation ? { orientation: window.screen.orientation.type } : {}),
-              }
-            : {};
-
-          const device = isMobile()
-            ? { type: platform.product, description: platform.description, ua: platform.ua }
-            : { type: 'pc', description: platform.description, ua: platform.ua };
-
-          const extended = stack as Stack & {
-            screen: Record<string, unknown>;
-            device: Record<string, unknown>;
-            browser: string;
-            os: string;
-          };
-
-          extended.screen = screen;
-          extended.device = device;
-          extended.browser = BROWSER;
-          extended.os = OS;
-
+          // metadata already captures browser, os, viewport, screen, language, mobile, timezone, url
+          // use onPrepareStack only for business-specific context
+          const extended = stack as Stack & { sessionId: string };
+          extended.sessionId = sessionID;
           return stack;
         }}
       >

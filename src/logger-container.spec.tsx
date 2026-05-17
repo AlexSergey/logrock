@@ -47,14 +47,25 @@ describe('LoggerContainer', () => {
       expect(stdout).not.toHaveBeenCalled();
     });
 
-    it('does not render BSOD when bsod={false}', () => {
+    it('does not render BSOD when showBsod={false}', () => {
       render(
-        <LoggerContainer bsod={false}>
+        <LoggerContainer showBsod={false}>
           <div />
         </LoggerContainer>,
       );
       fireWindowError();
       expect(screen.queryByText('Actions:')).not.toBeInTheDocument();
+    });
+
+    it('does not render custom BSOD component when showBsod={false}', () => {
+      const CustomBsod = (): ReactElement => <div data-testid="custom-bsod" />;
+      render(
+        <LoggerContainer bsodComponent={CustomBsod} showBsod={false}>
+          <div />
+        </LoggerContainer>,
+      );
+      fireWindowError();
+      expect(screen.queryByTestId('custom-bsod')).not.toBeInTheDocument();
     });
 
     it('handles only the first window error — subsequent errors are ignored', () => {
@@ -200,6 +211,50 @@ describe('LoggerContainer', () => {
       expect(onPrepareStack).toHaveBeenCalledTimes(1);
     });
 
+    it('getStackData returns a timestamp ISO string', () => {
+      const { result } = renderHook(() => useLoggerApi(), { wrapper: createWrapper() });
+      const { timestamp } = result.current.getStackData();
+      expect(typeof timestamp).toBe('string');
+      expect(isNaN(Date.parse(timestamp))).toBe(false);
+    });
+
+    it('getStackData returns metadata with all required fields', () => {
+      const { result } = renderHook(() => useLoggerApi(), { wrapper: createWrapper() });
+      const { metadata } = result.current.getStackData();
+      const stringFields = [
+        'browser',
+        'browserVersion',
+        'fullUrl',
+        'language',
+        'os',
+        'screen',
+        'timezone',
+        'url',
+        'viewport',
+      ] as const;
+      for (const field of stringFields) {
+        expect(typeof metadata[field]).toBe('string');
+      }
+      expect(typeof metadata.devicePixelRatio).toBe('number');
+      expect(typeof metadata.mobile).toBe('boolean');
+    });
+
+    it('onError receives a stack with timestamp and metadata', () => {
+      const onError = jest.fn();
+      render(
+        <LoggerContainer onError={onError}>
+          <div />
+        </LoggerContainer>,
+      );
+      fireWindowError();
+      const [[stackData]] = onError.mock.calls as [[Stack]];
+      expect(typeof stackData.timestamp).toBe('string');
+      expect(isNaN(Date.parse(stackData.timestamp))).toBe(false);
+      expect(typeof stackData.metadata.browser).toBe('string');
+      expect(typeof stackData.metadata.viewport).toBe('string');
+      expect(typeof stackData.metadata.mobile).toBe('boolean');
+    });
+
     it('limits the stack size to the limit prop', () => {
       render(
         <LoggerContainer limit={2}>
@@ -297,7 +352,49 @@ describe('LoggerContainer', () => {
     it('renders a custom bsod component when one is passed', () => {
       const CustomBsod = ({ count }: BsodProps): ReactElement => <div data-testid="custom-bsod">count:{count}</div>;
       render(
-        <LoggerContainer bsod={CustomBsod}>
+        <LoggerContainer bsodComponent={CustomBsod}>
+          <div />
+        </LoggerContainer>,
+      );
+      fireWindowError();
+      expect(screen.getByTestId('custom-bsod')).toBeInTheDocument();
+    });
+
+    it('renders BSOD when showBsod is not provided (default true)', () => {
+      render(
+        <LoggerContainer>
+          <div />
+        </LoggerContainer>,
+      );
+      fireWindowError();
+      expect(screen.getByText('Actions:')).toBeInTheDocument();
+    });
+
+    it('renders BSOD when showBsod={true} is explicit', () => {
+      render(
+        <LoggerContainer showBsod={true}>
+          <div />
+        </LoggerContainer>,
+      );
+      fireWindowError();
+      expect(screen.getByText('Actions:')).toBeInTheDocument();
+    });
+
+    it('still calls onError when showBsod={false} — only the overlay is suppressed', () => {
+      const onError = jest.fn();
+      render(
+        <LoggerContainer onError={onError} showBsod={false}>
+          <div />
+        </LoggerContainer>,
+      );
+      fireWindowError();
+      expect(onError).toHaveBeenCalledTimes(1);
+    });
+
+    it('renders custom BSOD component when showBsod={true}', () => {
+      const CustomBsod = ({ count }: BsodProps): ReactElement => <div data-testid="custom-bsod">count:{count}</div>;
+      render(
+        <LoggerContainer bsodComponent={CustomBsod} showBsod={true}>
           <div />
         </LoggerContainer>,
       );

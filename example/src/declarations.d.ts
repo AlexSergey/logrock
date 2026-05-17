@@ -1,8 +1,3 @@
-declare module '*.png' {
-  const src: string;
-  export default src;
-}
-
 declare module 'platform' {
   interface PlatformOs {
     architecture: number | null;

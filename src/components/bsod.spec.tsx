@@ -6,6 +6,20 @@ import { Bsod } from './bsod';
 const createStack = (actions: LogEntry[]): Stack => ({
   actions,
   env: '',
+  metadata: {
+    browser: '',
+    browserVersion: '',
+    devicePixelRatio: 1,
+    fullUrl: '',
+    language: '',
+    mobile: false,
+    os: '',
+    screen: '',
+    timezone: '',
+    url: '',
+    viewport: '',
+  },
+  timestamp: '',
   traceId: undefined,
 });
 

@@ -5,6 +5,20 @@ import { clone } from './utils';
 const makeStack = (): Stack => ({
   actions: [],
   env: 'http://example.com',
+  metadata: {
+    browser: '',
+    browserVersion: '',
+    devicePixelRatio: 1,
+    fullUrl: '',
+    language: '',
+    mobile: false,
+    os: '',
+    screen: '',
+    timezone: '',
+    url: '',
+    viewport: '',
+  },
+  timestamp: '',
   traceId: 'test-trace',
 });
 
@@ -19,12 +33,6 @@ describe('clone', () => {
       const stack = makeStack();
       const cloned = clone(stack);
       expect(cloned.actions).not.toBe(stack.actions);
-    });
-
-    it('strips function properties via JSON serialization', () => {
-      const stack: Stack = { ...makeStack(), onPrepareStack: (s) => s };
-      const cloned = clone(stack);
-      expect(cloned.onPrepareStack).toBeUndefined();
     });
 
     it('mutations to clone do not affect the original', () => {

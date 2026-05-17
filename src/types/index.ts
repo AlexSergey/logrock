@@ -37,8 +37,23 @@ export type Message = Error | Record<string, string> | string;
 export interface Stack {
   actions: LogEntry[];
   env: string;
-  onPrepareStack?: (s: Stack) => Stack;
+  metadata: StackMetadata;
+  timestamp: string;
   traceId: number | string | undefined;
+}
+
+export interface StackMetadata {
+  browser: string;
+  browserVersion: string;
+  devicePixelRatio: number;
+  fullUrl: string;
+  language: string;
+  mobile: boolean;
+  os: string;
+  screen: string;
+  timezone: string;
+  url: string;
+  viewport: string;
 }
 
 export interface StackUtilProps {
