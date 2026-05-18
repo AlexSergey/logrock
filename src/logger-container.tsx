@@ -99,8 +99,9 @@ export const LoggerContainer = ({
   const buildProps = useCallback(
     () => ({
       ...(typeof onPrepareStack === 'function' ? { onPrepareStack } : {}),
+      ...(typeof stdout === 'function' ? { stdout } : {}),
     }),
-    [onPrepareStack],
+    [onPrepareStack, stdout],
   );
 
   const getStackDataFn = useCallback(

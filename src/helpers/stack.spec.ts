@@ -121,6 +121,12 @@ describe('getStackData', () => {
 });
 
 describe('onCriticalError', () => {
+  describe('negative cases', () => {
+    it('does not throw when stdout is not provided in props', () => {
+      expect(() => onCriticalError(makeStack(), new LimitedArray<LogEntry>(), {}, new Error('boom'), 0)).not.toThrow();
+    });
+  });
+
   describe('positive cases', () => {
     it('adds a critical entry to the collection', () => {
       const collection = new LimitedArray<LogEntry>();
@@ -151,6 +157,18 @@ describe('onCriticalError', () => {
       const onPrepareStack = jest.fn((s: Stack) => s);
       onCriticalError(makeStack(), new LimitedArray<LogEntry>(), { onPrepareStack }, new Error('err'), 1);
       expect(onPrepareStack).toHaveBeenCalledTimes(1);
+    });
+
+    it('calls stdout with critical level, error message, empty ctx, and important=false', () => {
+      const stdout = jest.fn();
+      onCriticalError(makeStack(), new LimitedArray<LogEntry>(), { stdout }, new Error('crash'), 5);
+      expect(stdout).toHaveBeenCalledWith(LoggerLevels.critical, 'crash', '', false);
+    });
+
+    it('calls stdout exactly once per error', () => {
+      const stdout = jest.fn();
+      onCriticalError(makeStack(), new LimitedArray<LogEntry>(), { stdout }, new Error('err'), 1);
+      expect(stdout).toHaveBeenCalledTimes(1);
     });
   });
 });

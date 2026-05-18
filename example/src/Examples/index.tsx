@@ -112,11 +112,12 @@ function LoggerDemo() {
 
 export default function Examples() {
   const showMessage = useCallback((level: string, message: string, ctx: string, important: boolean) => {
-    const lvl = level as LogLevel;
-    console[lvl](ctx ? `[${ctx}] ${message}` : message);
+    const lvl = level as LogLevel & 'critical';
+    const cleanLevel = lvl === 'critical' ? 'error' : lvl;
+    console[cleanLevel](ctx ? `[${ctx}] ${message}` : message);
 
     if (important) {
-      toastByLevel[lvl]?.(ctx ? `[${ctx}] ${message}` : message);
+      toastByLevel[cleanLevel]?.(ctx ? `[${ctx}] ${message}` : message);
     }
   }, []);
 

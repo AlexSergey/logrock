@@ -58,6 +58,7 @@ export interface StackMetadata {
 
 export interface StackUtilProps {
   onPrepareStack?: (stack: Stack) => Stack;
+  stdout?: Stdout;
 }
 
 export type Stdout = (level: LoggerLevels, message: string, ctx: string, important: boolean) => void;

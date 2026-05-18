@@ -24,7 +24,12 @@ const onCriticalError = (
   trace: Error,
   lineNumber: number,
 ): Stack => {
-  stackCollection.add(createCritical(trace, lineNumber));
+  const entry = createCritical(trace, lineNumber);
+  stackCollection.add(entry);
+
+  if (typeof props.stdout === 'function') {
+    props.stdout(entry.level, entry.message, entry.ctx, false);
+  }
 
   return getStackData(stack, stackCollection, props);
 };
